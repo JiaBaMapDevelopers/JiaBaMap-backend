@@ -3,22 +3,122 @@ const router = express.Router();
 const controller = require("../controllers/commentsController");
 
 //依照餐廳的placeId搜尋所有評論
-router.get("/restaurant/:placeId", controller.getCommentsByRestaurant);
+router.get(
+  "/restaurant/:placeId",
+  controller.getCommentsByRestaurant,
+  /* 	
+    #swagger.summary = 'Search comments of the same restaurant'
+    #swagger.description = 'Endpoint to search comments based on the placeId'
+    */
+
+  /* 
+    #swagger.parameters['placeId'] = {
+      in: 'path',
+      description: 'The placeId of restaurant',
+      required: 'true',
+      type: 'string',
+    }
+  */
+);
 
 //依照使用者userId搜尋所有評論
-router.get("/user/:userId", controller.getCommentsByUser);
+router.get(
+  "/user/:userId",
+  controller.getCommentsByUser,
+  /* 	
+    #swagger.summary = 'Search comments of the same user'
+    #swagger.description = 'Endpoint to search comments based on the userId'
+    */
+
+  /* 
+    #swagger.parameters['userId'] = {
+      in: 'path',
+      description: 'The userId of user',
+      required: 'true',
+      type: 'string',
+    }
+  */
+);
 
 //新增一筆評論
-router.post("/", controller.createComment);
+router.post(
+  "/",
+  controller.createComment,
+  /* 
+    #swagger.summary = 'Create a new comment'
+    #swagger.description = 'Create a new comment for a specific place by a user. The comment includes userId, placeId, content, and rating.'
+  */
+  /* 
+    #swagger.parameters['body'] = {
+      in: 'body',
+      description: 'The details of the comment to be created.',
+      required: true,
+      schema: {
+        userId: 'string',
+        placeId: 'string',
+        content: 'string',
+        rating: 'number'
+      }
+    }
+  */
+);
 
 //更新一筆評論
-router.put("/:id", controller.updateComment);
+router.put(
+  "/:id",
+  controller.updateComment,
+  /* 	
+    #swagger.summary = 'Update comment'
+    #swagger.description = 'Update the comment'
+    */
+
+  /* 
+    #swagger.parameters['id'] = {
+      in: 'path',
+      description: 'The id of the comment',
+      required: 'true',
+      type: 'string',
+    }
+  */
+);
 
 //刪除一筆評論
-router.delete("/:id", controller.deleteComment);
+router.delete(
+  "/:id",
+  controller.deleteComment,
+  /* 	
+    #swagger.summary = 'Delete comment'
+    #swagger.description = 'Delete the comment'
+    */
+
+  /* 
+    #swagger.parameters['id'] = {
+      in: 'path',
+      description: 'The id of the comment',
+      required: 'true',
+      type: 'string',
+    }
+  */
+);
 
 //更新讚數
 //body直接提供更新後的數字
-router.put("/likes/:id", controller.updateLikes);
+router.put(
+  "/likes/:id",
+  controller.updateLikes,
+  /* 	
+    #swagger.summary = 'Update likes'
+    #swagger.description = 'Update the likes of comment'
+    */
+
+  /* 
+    #swagger.parameters['id'] = {
+      in: 'path',
+      description: 'The id of the comment',
+      required: 'true',
+      type: 'string',
+    }
+  */
+);
 
 module.exports = router;
