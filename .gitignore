@@ -3,4 +3,3 @@ node_modules
 swagger-output.json
 .DS_Store
 .env.development
-.env
