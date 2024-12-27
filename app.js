@@ -9,6 +9,8 @@ const mongoose = require("mongoose");
 
 const restaurantsRouter = require("./routes/restaurants");
 const commentsRouter = require("./routes/comments");
+const userRouter = require("./routes/users");
+const authRouter = require("./routes/auth");
 
 require("dotenv").config();
 
@@ -32,6 +34,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/restaurants", restaurantsRouter);
 app.use("/comments", commentsRouter);
+app.use("/user", userRouter);
+app.use("/auth", authRouter);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 module.exports = app;
