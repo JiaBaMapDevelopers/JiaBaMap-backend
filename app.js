@@ -41,6 +41,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+
 app.use("/restaurants", restaurantsRouter);
 app.use("/comments", commentsRouter);
 app.use('/articles', articlelistRouter);
