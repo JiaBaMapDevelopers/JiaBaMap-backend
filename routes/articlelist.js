@@ -2,11 +2,14 @@ const express = require('express');
 const router = express.Router();
 const articleController = require('../controllers/articlelistController');
 
-// 獲取所有文章
+// 獲取所有食記
 router.get('/', articleController.getAllArticles);
 
-// 創建新文章
+// 新增食記
 router.post('/', articleController.createArticle);
+
+// 刪除食記
+router.delete('/:id', articleController.deleteArticle);
 
 // 文章按讚/取消按讚
 router.post('/:id/like', articleController.toggleLike);

@@ -11,6 +11,10 @@ const replySchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  user:{
+    type: String,
+    required: true
+  },
   userPhoto: String,
   createdAt: {
     type: Date,
@@ -26,9 +30,6 @@ const replySchema = new mongoose.Schema({
 });
 
 const commentSchema = new mongoose.Schema({
-  id:{
-    type:Number
-    },
   content: {
     type: String,
     required: true,
@@ -37,6 +38,10 @@ const commentSchema = new mongoose.Schema({
   userId: {
     type: String,
     required: true
+  },
+  user:{
+    type: String,
+    required: true,
   },
   userPhoto: String,
   createdAt: {
@@ -54,12 +59,14 @@ const commentSchema = new mongoose.Schema({
 });
 
 const articleSchema = new mongoose.Schema({
-  id:{
-    type:Number
-  },
   userId: {
     type: String,
     required: true
+  },
+  user:{
+    type: String,
+    required: true,
+    trim: true
   },
   placeId: {
     type: String,

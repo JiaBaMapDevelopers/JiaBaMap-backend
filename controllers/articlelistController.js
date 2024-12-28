@@ -11,7 +11,7 @@ exports.getAllArticles = async (_req, res) => {
 
 exports.createArticle = async (req, res) => {
   try {
-    const { userId, placeId, title, content, photo, location, price, openHours } = req.body;
+    const { userId, placeId, title, content, photo, location, price, openHours, user } = req.body;
 
     if (!userId || !placeId || !title || !content) {
       return res.status(400).json({ 
@@ -24,6 +24,7 @@ exports.createArticle = async (req, res) => {
       placeId,
       title,
       content,
+      user,
       photo,
       location,
       price,
@@ -33,10 +34,29 @@ exports.createArticle = async (req, res) => {
     const savedArticle = await article.save();
     res.status(201).json(savedArticle);
   } catch (error) {
-    console.error(error);
     res.status(400).json({ message: "Cannot create a new article" });
   }
 };
+
+
+
+exports.deleteArticle = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // 只刪除指定的文章
+    await Article.findByIdAndDelete(id);
+    
+    res.status(200).json({
+      message: '文章已成功刪除'
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      message: '刪除文章時發生錯誤'
+    });
+  }
+};
+
 
 // 通用的按讚處理函數
 const handleLike = async (doc, userId) => {
@@ -82,6 +102,9 @@ exports.toggleLike = async (req, res) => {
   }
 };
 
+
+
+
 exports.addComment = async (req, res) => {
   try {
     const article = await Article.findById(req.params.id);
@@ -91,6 +114,7 @@ exports.addComment = async (req, res) => {
 
     // 從請求體中獲取評論資料
     const { content, userId, user, userPhoto } = req.body;
+    console.log('收到的評論數據:', { content, userId, user, userPhoto });
 
     // 驗證必要欄位
     if (!content || !userId || !user) {
@@ -110,7 +134,6 @@ exports.addComment = async (req, res) => {
       likesCount: 0,
       replies: []
     };
-
     // 添加評論到文章
     article.comments.push(newComment);
     article.updatedAt = new Date();
@@ -118,8 +141,8 @@ exports.addComment = async (req, res) => {
     
     // 返回新創建的評論
     const createdComment = article.comments[article.comments.length - 1];
-    
-    // 返回與前端格式匹配的資料
+    console.log('保存後的評論:', createdComment);
+    // 返回與前端格式匹配的資料，確保包含 user 字段
     res.status(201).json({
       _id: createdComment._id,
       content: createdComment.content,
