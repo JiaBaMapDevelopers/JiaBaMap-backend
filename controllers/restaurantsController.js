@@ -162,6 +162,7 @@ const detailOfRestaurant = async (req, res, next) => {
       photoIds: photoNames.map((id) => encodeURIComponent(id)),
       lat: response.data.location.latitude,
       lng: response.data.location.longitude,
+      placeId: id
     };
 
     res.json(data);
