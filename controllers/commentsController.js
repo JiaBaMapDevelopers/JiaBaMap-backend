@@ -1,3 +1,4 @@
+const { uploadPhotos } = require("../utils");
 const Comment = require("../models/commentsModel");
 
 //依照餐廳的placeId搜尋所有評論
@@ -27,7 +28,7 @@ const getCommentsByUser = async (req, res, next) => {
 };
 
 //新增一筆評論
-const createComment = async (req, res, next) => {
+const createComment = async (req, res) => {
   try {
     const { userId, placeId, content, rating } = req.body;
 
@@ -38,7 +39,10 @@ const createComment = async (req, res, next) => {
       return;
     }
 
-    const newComment = new Comment(req.body);
+    const photoUrls = await uploadPhotos(req.files);
+
+    //save
+    const newComment = new Comment({ ...req.body, photos: photoUrls });
     const savedComment = await newComment.save();
     res.json(savedComment);
   } catch (err) {
@@ -61,10 +65,13 @@ const updateComment = async (req, res, next) => {
       return;
     }
 
+    const photoUrls = await uploadPhotos(req.files);
+
     const comment = await Comment.findByIdAndUpdate(
       commentId,
       {
         ...req.body,
+        photos: photoUrls,
         updatedAt: new Date(),
       },
       { new: true },
@@ -72,6 +79,7 @@ const updateComment = async (req, res, next) => {
     );
     res.json(comment);
   } catch (err) {
+    console.log(err);
     res.status(400).json({ message: "Cannot update this comment" });
   }
 };
