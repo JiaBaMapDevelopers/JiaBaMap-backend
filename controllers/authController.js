@@ -51,7 +51,7 @@ const googleLogin = async (req, res, next) => {
       email,
       profilePicture,
     });
-    await user.save;
+    await user.save();
   }
 
   const accessToken = generateToken({

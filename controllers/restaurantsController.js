@@ -5,10 +5,10 @@ const searchByKeywordAndLocation = async (req, res, next) => {
   // get query parameter
   const { keyword, lat, lng } = req.query;
 
-  if (!keyword || !lat || !lng) {
-    res.status(400).json({ message: "Missing parameter" });
-    return;
-  }
+  // if (!keyword || !lat || !lng) {
+  //   res.status(400).json({ message: "Missing parameter" });
+  //   return;
+  // }
   // send request to Google API
   try {
     const body = {
