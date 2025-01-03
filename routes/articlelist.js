@@ -32,4 +32,12 @@ router.delete('/:articleId/comments/:commentId/replies/:replyId', articleControl
 // 回覆按讚/取消按讚
 router.post('/:articleId/comments/:commentId/replies/:replyId/like', articleController.toggleReplyLike);
 
+router.get('/published/:userId', articleController.getPublishedArticles);
+
+// 獲取單篇食記
+router.get('/:id', articleController.getArticleById);
+
+// 修改已發布食記
+router.patch('/:id', articleController.updateArticle);
+
 module.exports = router;

@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const replySchema = new mongoose.Schema({
-    
   content: {
     type: String,
     required: true,
@@ -11,7 +10,7 @@ const replySchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  user:{
+  user: {
     type: String,
     required: true
   },
@@ -39,9 +38,9 @@ const commentSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  user:{
+  user: {
     type: String,
-    required: true,
+    required: true
   },
   userPhoto: String,
   createdAt: {
@@ -63,15 +62,18 @@ const articleSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  user:{
-    type: String,
-    required: true,
-    trim: true
-  },
-  placeId: {
+  user: {
     type: String,
     required: true
   },
+  status: {
+    type: String,
+    enum: ['draft', 'published'],
+    default: 'draft'
+  },
+  userPhoto: String,
+  placeId: String,
+  restaurantName: String,
   title: {
     type: String,
     required: true
@@ -92,9 +94,13 @@ const articleSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  location: String,
-  price: String,
-  openHours: String,
+  eatdateAt: {
+    type: Date,
+    required: function() {
+      // 只在創建新文章時要求 eatdateAt
+      return this.isNew;
+    }
+  },
   likedBy: [{
     type: String
   }],

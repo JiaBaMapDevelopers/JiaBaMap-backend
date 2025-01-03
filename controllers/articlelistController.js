@@ -1,9 +1,36 @@
 const Article = require('../models/articlelistModel');
 
-exports.getAllArticles = async (_req, res) => {
+exports.getAllArticles = async (req, res) => {
   try {
+    const userId = req.query.userId;  // 從查詢參數獲取用戶ID
     const articles = await Article.find().sort({ createdAt: -1 });
-    res.json(articles);
+
+    // 如果有用戶ID，檢查每篇文章的按讚狀態
+    const articlesWithLikeStatus = articles.map(article => {
+      const articleObj = article.toObject();
+      if (userId) {
+        // 檢查文章是否被當前用戶按讚
+        articleObj.isLiked = article.likedBy.includes(userId);
+
+        // 檢查評論的按讚狀態
+        articleObj.comments = article.comments.map(comment => {
+          const commentObj = comment.toObject();
+          commentObj.isLiked = comment.likedBy.includes(userId);
+
+          // 檢查回覆的按讚狀態
+          commentObj.replies = comment.replies.map(reply => {
+            const replyObj = reply.toObject();
+            replyObj.isLiked = reply.likedBy.includes(userId);
+            return replyObj;
+          });
+
+          return commentObj;
+        });
+      }
+      return articleObj;
+    });
+
+    res.json(articlesWithLikeStatus);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -11,11 +38,13 @@ exports.getAllArticles = async (_req, res) => {
 
 exports.createArticle = async (req, res) => {
   try {
-    const { userId, placeId, title, content, photo, location, price, openHours, user } = req.body;
+    console.log('Received article data:', req.body);  // 添加日誌
+    const { userId, placeId, title, content, photo, user, userPhoto, eatdate, restaurantName } = req.body;
 
-    if (!userId || !placeId || !title || !content) {
+    if (!userId || !restaurantName || !title || !content || !eatdate) {
+      console.log('Missing required fields:', { userId, restaurantName, title, content, eatdate });  // 添加日誌
       return res.status(400).json({ 
-        message: "UserId, placeId, title, and content are required" 
+        message: "UserId, placeId, title, eatdate and content are required" 
       });
     }
 
@@ -25,16 +54,24 @@ exports.createArticle = async (req, res) => {
       title,
       content,
       user,
-      photo,
-      location,
-      price,
-      openHours
+      userPhoto,
+      restaurantName,
+      photo: photo || '',  // 設置默認值
+      eatdateAt: new Date(eatdate),
+      status: 'published'
     });
 
+    console.log('Article to save:', article);  // 添加日誌
+
     const savedArticle = await article.save();
+    console.log('Article saved successfully:', savedArticle);  // 添加日誌
     res.status(201).json(savedArticle);
   } catch (error) {
-    res.status(400).json({ message: "Cannot create a new article" });
+    console.error('Create article error:', error);
+    res.status(400).json({ 
+      message: error.message || "Cannot create a new article",
+      details: error.toString()  // 添加更多錯誤詳情
+    });
   }
 };
 
@@ -56,6 +93,28 @@ exports.deleteArticle = async (req, res) => {
     });
   }
 };
+
+
+
+// 新增獲取已發布文章的控制器
+exports.getPublishedArticles = async (req, res) => {
+    try {
+      const userId = req.params.userId;  // 從 URL 參數獲取 userId
+      if (!userId) {
+        return res.status(400).json({ message: 'UserId is required' });
+      }
+  
+      const articles = await Article.find({ 
+        userId: userId,
+        status: 'published'
+      }).sort({ createdAt: -1 });
+  
+      res.json(articles);
+    } catch (error) {
+      console.error('Get published articles error:', error);
+      res.status(500).json({ message: error.message });
+    }
+  };
 
 
 // 通用的按讚處理函數
@@ -333,5 +392,60 @@ exports.toggleReplyLike = async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// 獲取單篇文章
+exports.getArticleById = async (req, res) => {
+  try {
+    const article = await Article.findById(req.params.id);
+    if (!article) {
+      return res.status(404).json({ message: 'Article not found' });
+    }
+    res.json(article);
+  } catch (error) {
+    console.error('Get article error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// 修改已發布文章
+exports.updateArticle = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, content, restaurantName, placeId, photo, eatdate } = req.body;
+
+    // 驗證必要欄位
+    if (!title || !content || !eatdate) {
+      return res.status(400).json({ 
+        message: "Title, content and eatdate are required" 
+      });
+    }
+
+    // 查找並更新文章
+    const updatedArticle = await Article.findByIdAndUpdate(
+      id,
+      {
+        title,
+        content,
+        restaurantName,
+        placeId,
+        photo,
+        eatdateAt: new Date(eatdate),
+        updatedAt: new Date()
+      },
+      { new: true }  // 返回更新後的文檔
+    );
+
+    if (!updatedArticle) {
+      return res.status(404).json({ message: 'Article not found' });
+    }
+
+    res.json(updatedArticle);
+  } catch (error) {
+    console.error('Update article error:', error);
+    res.status(400).json({ 
+      message: error.message || "Cannot update the article" 
+    });
   }
 };

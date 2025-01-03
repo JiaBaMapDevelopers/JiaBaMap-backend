@@ -16,15 +16,19 @@ require("dotenv").config();
 // Initialize MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected successfully"))
+  .then(() => console.log("Local MongoDB connected successfully"))
   .catch((err) => console.log("MongoDB connection error:", err));
+
+mongoose.connection.on('disconnected', () => {
+  console.log('MongoDB disconnected. Attempting to reconnect...');
+});
 
 mongoose.connection.on('error', (err) => {
   console.error('MongoDB connection error:', err);
 });
 
-mongoose.connection.once('open', () => {
-  console.log('MongoDB connected successfully');
+mongoose.connection.on('connected', () => {
+  console.log('MongoDB connected');
 });
 
 const app = express();
