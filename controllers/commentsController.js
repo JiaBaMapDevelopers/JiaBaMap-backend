@@ -2,9 +2,9 @@ const { uploadPhotos } = require("../utils");
 const Comment = require("../models/commentsModel");
 
 //依照餐廳的placeId搜尋所有評論
-const getCommentsByRestaurant = async (req, res, next) => {
+const getCommentsByRestaurant = async (req, res, _next) => {
   try {
-    const placeId = req.params.placeId;
+    const placeId = req.params.id;
 
     const restaurantComments = await Comment.find({ placeId });
     res.json(restaurantComments);
@@ -14,9 +14,9 @@ const getCommentsByRestaurant = async (req, res, next) => {
 };
 
 //依照使用者userId搜尋所有評論
-const getCommentsByUser = async (req, res, next) => {
+const getCommentsByUser = async (req, res, _next) => {
   try {
-    const userId = req.params.userId;
+    const userId = req.params.id;
     console.log(userId);
 
     const userComments = await Comment.find({ userId });
@@ -52,7 +52,7 @@ const createComment = async (req, res) => {
 };
 
 //更新一筆評論
-const updateComment = async (req, res, next) => {
+const updateComment = async (req, res, _next) => {
   const commentId = req.params.id;
 
   try {
@@ -85,7 +85,7 @@ const updateComment = async (req, res, next) => {
 };
 
 //刪除一筆評論
-const deleteComment = async (req, res, next) => {
+const deleteComment = async (req, res, _next) => {
   const commentId = req.params.id;
 
   try {
@@ -101,7 +101,7 @@ const deleteComment = async (req, res, next) => {
 
 //更新評論讚數
 //前端直接提供新的讚數數字在body給後端更新
-const updateLikes = async (req, res, next) => {
+const updateLikes = async (req, res, _next) => {
   const commentId = req.params.id;
   const newLikesCount = req.body.likes;
 

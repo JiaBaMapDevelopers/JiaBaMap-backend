@@ -19,15 +19,13 @@ const verifyToken = (req, res, next) => {
 
   const payload = jwt.decode(token);
   const id = payload.id;
-  //   const username = payload.name;
 
   req.body.id = id;
-  //   req.body.name = username;
 
   next();
 };
 
-const googleLogin = async (req, res, next) => {
+const googleLogin = async (req, res, _next) => {
   const token = req.body.credential;
   let payload;
   try {

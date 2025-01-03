@@ -13,7 +13,7 @@ const upload = multer({
 
 //依照餐廳的placeId搜尋所有評論
 router.get(
-  "/restaurant/:placeId",
+  "/restaurant/:id",
   controller.getCommentsByRestaurant,
   /* 	
     #swagger.summary = 'Search comments of the same restaurant'
@@ -32,7 +32,7 @@ router.get(
 
 //依照使用者userId搜尋所有評論
 router.get(
-  "/user/:userId",
+  "/user/:id",
   controller.getCommentsByUser,
   /* 	
     #swagger.summary = 'Search comments of the same user'
