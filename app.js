@@ -33,8 +33,7 @@ mongoose.connection.on('connected', () => {
 
 const app = express();
 
-// CORS 設置
-app.use(cors());
+
 
 // {
 //   origin: process.env.FRONTEND_URL,
@@ -48,11 +47,16 @@ app.get('/test', (_req, res) => {
   res.json({ message: 'API is working!' });
 });
 
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true
+}));
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+app.use(cors())
 
 app.use("/restaurants", restaurantsRouter);
 app.use("/comments", commentsRouter);
