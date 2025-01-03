@@ -1,9 +1,10 @@
+const { uploadPhotos } = require("../utils");
 const Comment = require("../models/commentsModel");
 
 //依照餐廳的placeId搜尋所有評論
-const getCommentsByRestaurant = async (req, res, next) => {
+const getCommentsByRestaurant = async (req, res, _next) => {
   try {
-    const placeId = req.params.placeId;
+    const placeId = req.params.id;
 
     const restaurantComments = await Comment.find({ placeId });
     res.json(restaurantComments);
@@ -13,9 +14,9 @@ const getCommentsByRestaurant = async (req, res, next) => {
 };
 
 //依照使用者userId搜尋所有評論
-const getCommentsByUser = async (req, res, next) => {
+const getCommentsByUser = async (req, res, _next) => {
   try {
-    const userId = req.params.userId;
+    const userId = req.params.id;
     console.log(userId);
 
     const userComments = await Comment.find({ userId });
@@ -27,7 +28,7 @@ const getCommentsByUser = async (req, res, next) => {
 };
 
 //新增一筆評論
-const createComment = async (req, res, next) => {
+const createComment = async (req, res) => {
   try {
     const { userId, placeId, content, rating } = req.body;
 
@@ -38,7 +39,10 @@ const createComment = async (req, res, next) => {
       return;
     }
 
-    const newComment = new Comment(req.body);
+    const photoUrls = await uploadPhotos(req.files);
+
+    //save
+    const newComment = new Comment({ ...req.body, photos: photoUrls });
     const savedComment = await newComment.save();
     res.json(savedComment);
   } catch (err) {
@@ -48,7 +52,7 @@ const createComment = async (req, res, next) => {
 };
 
 //更新一筆評論
-const updateComment = async (req, res, next) => {
+const updateComment = async (req, res, _next) => {
   const commentId = req.params.id;
 
   try {
@@ -61,10 +65,13 @@ const updateComment = async (req, res, next) => {
       return;
     }
 
+    const photoUrls = await uploadPhotos(req.files);
+
     const comment = await Comment.findByIdAndUpdate(
       commentId,
       {
         ...req.body,
+        photos: photoUrls,
         updatedAt: new Date(),
       },
       { new: true },
@@ -72,12 +79,13 @@ const updateComment = async (req, res, next) => {
     );
     res.json(comment);
   } catch (err) {
+    console.log(err);
     res.status(400).json({ message: "Cannot update this comment" });
   }
 };
 
 //刪除一筆評論
-const deleteComment = async (req, res, next) => {
+const deleteComment = async (req, res, _next) => {
   const commentId = req.params.id;
 
   try {
@@ -93,7 +101,7 @@ const deleteComment = async (req, res, next) => {
 
 //更新評論讚數
 //前端直接提供新的讚數數字在body給後端更新
-const updateLikes = async (req, res, next) => {
+const updateLikes = async (req, res, _next) => {
   const commentId = req.params.id;
   const newLikesCount = req.body.likes;
 
