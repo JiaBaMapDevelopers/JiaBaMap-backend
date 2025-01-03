@@ -48,7 +48,6 @@ const googleLogin = async (req, res, _next) => {
       email,
       profilePicture,
     });
-
     await user.save();
   }
 

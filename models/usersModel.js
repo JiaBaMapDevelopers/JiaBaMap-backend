@@ -21,6 +21,11 @@ const userSchema = new mongoose.Schema(
     igLink: {
       type: String,
     },
+    favorites: [
+      {
+        type: String,
+      },
+    ]
   },
   {
     timestamps: true,

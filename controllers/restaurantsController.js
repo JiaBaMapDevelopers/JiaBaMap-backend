@@ -5,10 +5,10 @@ const searchByKeywordAndLocation = async (req, res, _next) => {
   // get query parameter
   const { keyword, lat, lng } = req.query;
 
-  if (!keyword || !lat || !lng) {
-    res.status(400).json({ message: "Missing parameter" });
-    return;
-  }
+  // if (!keyword || !lat || !lng) {
+  //   res.status(400).json({ message: "Missing parameter" });
+  //   return;
+  // }
   // send request to Google API
   try {
     const body = {
@@ -162,6 +162,7 @@ const detailOfRestaurant = async (req, res, _next) => {
       photoIds: photoNames.map((id) => encodeURIComponent(id)),
       lat: response.data.location.latitude,
       lng: response.data.location.longitude,
+      placeId: id
     };
 
     res.json(data);
