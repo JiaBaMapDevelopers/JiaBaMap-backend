@@ -45,6 +45,11 @@ const commentSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  //評論的照片
+  photos: {
+    type: [String],
+    default: [],
+  },
   //是否刪除
   isDeleted: {
     type: Boolean,
