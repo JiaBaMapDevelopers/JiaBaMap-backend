@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const controller = require("../controllers/commentsController");
-
+const notificationMiddleware = require("../middlewares/notificationMiddleWare");
 //依照餐廳的placeId搜尋所有評論
 router.get(
   "/restaurant/:placeId",
@@ -43,7 +43,9 @@ router.get(
 //新增一筆評論
 router.post(
   "/",
-  controller.createComment,
+  notificationMiddleware.notifyOnCommentCreate,
+  controller.createComment
+
   /* 
     #swagger.summary = 'Create a new comment'
     #swagger.description = 'Create a new comment for a specific place by a user. The comment includes userId, placeId, content, and rating.'
@@ -105,6 +107,7 @@ router.delete(
 //body直接提供更新後的數字
 router.put(
   "/likes/:id",
+  notificationMiddleware.notifyOnLikeUpdate,
   controller.updateLikes,
   /* 	
     #swagger.summary = 'Update likes'

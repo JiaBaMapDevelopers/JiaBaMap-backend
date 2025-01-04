@@ -51,13 +51,13 @@ const googleLogin = async (req, res, next) => {
       email,
       profilePicture,
     });
-    await user.save;
+    await user.save();
   }
 
   const accessToken = generateToken({
     id: user._id,
-    name: user.name,
-    profilePicture: user.profilePicture,
+    // name: user.name,
+    // profilePicture: user.profilePicture,
   });
 
   console.log(accessToken);
