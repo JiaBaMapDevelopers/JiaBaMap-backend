@@ -34,7 +34,7 @@ const createStore = async (req, res) => {
     });
   } catch (error) {
     console.log("建立餐廳失敗：", error);
-    res.status(500).json({ message: "餐廳新增失敗，請稍後再試", error });
+    res.status(500).json({ message: "餐廳新增失敗，請稍後再試" });
   }
 };
 module.exports = {
