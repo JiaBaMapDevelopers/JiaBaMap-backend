@@ -45,6 +45,17 @@ const commentSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  likedBy: [
+    { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "User" 
+  }
+  ], // 按讚的用戶 ID 列表
+  //評論的照片
+  photos: {
+    type: [String],
+    default: [],
+  },
   //是否刪除
   isDeleted: {
     type: Boolean,

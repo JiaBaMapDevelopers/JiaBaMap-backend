@@ -1,14 +1,14 @@
 const axios = require("axios");
 
 //依關鍵字與地點搜尋
-const searchByKeywordAndLocation = async (req, res, next) => {
+const searchByKeywordAndLocation = async (req, res, _next) => {
   // get query parameter
   const { keyword, lat, lng } = req.query;
 
-  if (!keyword || !lat || !lng) {
-    res.status(400).json({ message: "Missing parameter" });
-    return;
-  }
+  // if (!keyword || !lat || !lng) {
+  //   res.status(400).json({ message: "Missing parameter" });
+  //   return;
+  // }
   // send request to Google API
   try {
     const body = {
@@ -73,7 +73,7 @@ const searchByKeywordAndLocation = async (req, res, next) => {
 };
 
 //取得staticmap
-const getStaticmap = async (req, res, next) => {
+const getStaticmap = async (req, res, _next) => {
   // get query parameter
   const { lat, lng } = req.query;
 
@@ -104,7 +104,7 @@ const getStaticmap = async (req, res, next) => {
 };
 
 //依店家place_id取得詳細資訊
-const detailOfRestaurant = async (req, res, next) => {
+const detailOfRestaurant = async (req, res, _next) => {
   // get query parameter
   const id = req.params.id;
 
@@ -162,6 +162,7 @@ const detailOfRestaurant = async (req, res, next) => {
       photoIds: photoNames.map((id) => encodeURIComponent(id)),
       lat: response.data.location.latitude,
       lng: response.data.location.longitude,
+      placeId: id
     };
 
     res.json(data);
@@ -172,7 +173,7 @@ const detailOfRestaurant = async (req, res, next) => {
 };
 
 //取得店家照片
-const restaurantPhoto = async (req, res, next) => {
+const restaurantPhoto = async (req, res, _next) => {
   // get query parameter
   const photoId = req.params.id;
 

@@ -1,11 +1,20 @@
 const express = require("express");
+const multer = require("multer");
 const router = express.Router();
 const controller = require("../controllers/commentsController");
 const notificationMiddleware = require("../middlewares/notificationMiddleWare");
 
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 4 * 1024 * 1024,
+  },
+});
+
 //依照餐廳的placeId搜尋所有評論
 router.get(
-  "/restaurant/:placeId",
+  "/restaurant/:id",
   controller.getCommentsByRestaurant,
   /* 	
     #swagger.summary = 'Search comments of the same restaurant'
@@ -24,7 +33,7 @@ router.get(
 
 //依照使用者userId搜尋所有評論
 router.get(
-  "/user/:userId",
+  "/user/:id",
   controller.getCommentsByUser,
   /* 	
     #swagger.summary = 'Search comments of the same user'
@@ -45,8 +54,8 @@ router.get(
 router.post(
   "/",
   notificationMiddleware.notifyOnCommentCreate,
-  controller.createComment
-
+  upload.array("photos", 5),
+  controller.createComment,
   /* 
     #swagger.summary = 'Create a new comment'
     #swagger.description = 'Create a new comment for a specific place by a user. The comment includes userId, placeId, content, and rating.'
@@ -69,6 +78,7 @@ router.post(
 //更新一筆評論
 router.put(
   "/:id",
+  upload.array("photos", 5),
   controller.updateComment,
   /* 	
     #swagger.summary = 'Update comment'
