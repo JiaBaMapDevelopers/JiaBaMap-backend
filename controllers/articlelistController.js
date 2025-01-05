@@ -37,17 +37,14 @@ exports.getAllArticles = async (req, res) => {
 };
 
 exports.createArticle = async (req, res) => {
-  try {
-    console.log('Received article data:', req.body);  // 添加日誌
-    const { userId, placeId, title, content, photo, user, userPhoto, eatdate, restaurantName } = req.body;
-
-    if (!userId || !restaurantName || !title || !content || !eatdate) {
-      console.log('Missing required fields:', { userId, restaurantName, title, content, eatdate });  // 添加日誌
+  const { userId, placeId, title, content, photo, user, userPhoto, eatdate, restaurantName } = req.body;
+  
+  if (!userId || !restaurantName || !title || !content || !eatdate) {
       return res.status(400).json({ 
         message: "UserId, placeId, title, eatdate and content are required" 
       });
     }
-
+    
     const article = new Article({
       userId,
       placeId,
@@ -60,17 +57,17 @@ exports.createArticle = async (req, res) => {
       eatdateAt: new Date(eatdate),
       status: 'published'
     });
+    
+    res.status(200).json({
+      message: '食記已成功建立'
+    });
 
-    console.log('Article to save:', article);  // 添加日誌
-
-    const savedArticle = await article.save();
-    console.log('Article saved successfully:', savedArticle);  // 添加日誌
-    res.status(201).json(savedArticle);
+    try {
+    await article.save();     
   } catch (error) {
-    console.error('Create article error:', error);
     res.status(400).json({ 
       message: error.message || "Cannot create a new article",
-      details: error.toString()  // 添加更多錯誤詳情
+      details: error.toString()  
     });
   }
 };
@@ -78,7 +75,7 @@ exports.createArticle = async (req, res) => {
 
 
 exports.deleteArticle = async (req, res) => {
-  try {
+  
     const { id } = req.params;
     
     // 只刪除指定的文章
@@ -87,11 +84,7 @@ exports.deleteArticle = async (req, res) => {
     res.status(200).json({
       message: '文章已成功刪除'
     });
-  } catch (error) {
-    res.status(500).json({ 
-      message: '刪除文章時發生錯誤'
-    });
-  }
+  
 };
 
 
@@ -111,35 +104,33 @@ exports.getPublishedArticles = async (req, res) => {
   
       res.json(articles);
     } catch (error) {
-      console.error('Get published articles error:', error);
       res.status(500).json({ message: error.message });
     }
   };
 
 
-// 通用的按讚處理函數
-const handleLike = async (doc, userId) => {
-  const isLiked = doc.likedBy.includes(userId);
-  
-  if (isLiked) {
-    // 取消按讚
-    doc.likedBy = doc.likedBy.filter(id => id !== userId);
-    doc.likesCount = Math.max(0, doc.likesCount - 1);
-  } else {
-    // 添加按讚
-    doc.likedBy.push(userId);
-    doc.likesCount++;
-  }
-  
-  return {
-    isLiked: !isLiked,
-    likesCount: doc.likesCount
+  const handleLike = async (doc, userId) => {
+    const isLiked = doc.likedBy.includes(userId);
+    
+    if (isLiked) {
+      // 取消按讚
+      doc.likedBy = doc.likedBy.filter(id => id !== userId);
+      doc.likesCount = Math.max(0, doc.likesCount - 1);
+    } else {
+      // 添加按讚
+      doc.likedBy.push(userId);
+      doc.likesCount++;
+    }
+    
+    return {
+      isLiked: !isLiked,
+      likesCount: doc.likesCount,
+      likedBy: doc.likedBy  // 返回完整的按讚用戶列表
+    };
   };
-};
 
 // 文章按讚
 exports.toggleLike = async (req, res) => {
-  try {
     const { id } = req.params;
     const { userId } = req.body;
 
@@ -156,16 +147,13 @@ exports.toggleLike = async (req, res) => {
     await article.save();
 
     res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
 };
 
 
 
 
 exports.addComment = async (req, res) => {
-  try {
+  
     const article = await Article.findById(req.params.id);
     if (!article) {
       return res.status(404).json({ message: 'Article not found' });
@@ -173,7 +161,7 @@ exports.addComment = async (req, res) => {
 
     // 從請求體中獲取評論資料
     const { content, userId, user, userPhoto } = req.body;
-    console.log('收到的評論數據:', { content, userId, user, userPhoto });
+  
 
     // 驗證必要欄位
     if (!content || !userId || !user) {
@@ -200,7 +188,6 @@ exports.addComment = async (req, res) => {
     
     // 返回新創建的評論
     const createdComment = article.comments[article.comments.length - 1];
-    console.log('保存後的評論:', createdComment);
     // 返回與前端格式匹配的資料，確保包含 user 字段
     res.status(201).json({
       _id: createdComment._id,
@@ -214,39 +201,38 @@ exports.addComment = async (req, res) => {
       replies: []
     });
 
-  } catch (error) {
-    console.error('Add comment error:', error);
-    res.status(400).json({ message: error.message });
-  }
 };
 
 exports.deleteComment = async (req, res) => {
-  try {
     const article = await Article.findById(req.params.articleId);
     if (!article) {
       return res.status(404).json({ message: 'Article not found' });
     }
 
-    const commentIndex = article.comments.findIndex(
-      comment => comment._id.toString() === req.params.commentId
+    // 使用 MongoDB 的 $pull 操作符來移除評論
+    const result = await Article.findByIdAndUpdate(
+      req.params.articleId,
+      {
+        $pull: {
+          comments: { _id: req.params.commentId }
+        }
+      },
+      { new: true }  // 返回更新後的文檔
     );
 
-    if (commentIndex === -1) {
+    if (!result) {
       return res.status(404).json({ message: 'Comment not found' });
     }
 
-    article.comments.splice(commentIndex, 1);
-    await article.save();
-    
-    res.status(200).json({ message: 'Comment deleted' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+    res.status(200).json({ 
+      message: 'Comment deleted successfully',
+      article: result
+    });
 };
 
 // 評論按讚
 exports.toggleCommentLike = async (req, res) => {
-  try {
+  
     const { articleId, commentId } = req.params;
     const { userId } = req.body;
 
@@ -264,13 +250,9 @@ exports.toggleCommentLike = async (req, res) => {
     await article.save();
 
     res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
 };
 
 exports.addReply = async (req, res) => {
-  try {
     const article = await Article.findById(req.params.articleId);
     if (!article) {
       return res.status(404).json({ message: 'Article not found' });
@@ -321,14 +303,10 @@ exports.addReply = async (req, res) => {
       likesCount: 0,
       isLiked: false
     });
-
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
 };
 
 exports.deleteReply = async (req, res) => {
-  try {
+  
     const { articleId, commentId, replyId } = req.params;
 
     const article = await Article.findById(articleId);
@@ -358,16 +336,11 @@ exports.deleteReply = async (req, res) => {
     res.status(200).json({ 
       message: '回覆已刪除'
     });
-
-  } catch (error) {
-    console.error('Delete reply error:', error);
-    res.status(500).json({ message: error.message });
-  }
 };
 
 // 回覆按讚
 exports.toggleReplyLike = async (req, res) => {
-  try {
+  
     const { articleId, commentId, replyId } = req.params;
     const { userId } = req.body;
 
@@ -390,28 +363,20 @@ exports.toggleReplyLike = async (req, res) => {
     await article.save();
 
     res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
 };
 
 // 獲取單篇文章
 exports.getArticleById = async (req, res) => {
-  try {
+  
     const article = await Article.findById(req.params.id);
     if (!article) {
       return res.status(404).json({ message: 'Article not found' });
     }
     res.json(article);
-  } catch (error) {
-    console.error('Get article error:', error);
-    res.status(500).json({ message: error.message });
-  }
 };
 
 // 修改已發布文章
 exports.updateArticle = async (req, res) => {
-  try {
     const { id } = req.params;
     const { title, content, restaurantName, placeId, photo, eatdate } = req.body;
 
@@ -442,10 +407,4 @@ exports.updateArticle = async (req, res) => {
     }
 
     res.json(updatedArticle);
-  } catch (error) {
-    console.error('Update article error:', error);
-    res.status(400).json({ 
-      message: error.message || "Cannot update the article" 
-    });
-  }
 };
