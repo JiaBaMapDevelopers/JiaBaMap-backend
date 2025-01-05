@@ -100,28 +100,45 @@ const deleteComment = async (req, res, _next) => {
 };
 
 //更新評論讚數
-//前端直接提供新的讚數數字在body給後端更新
-const updateLikes = async (req, res, _next) => {
-  const commentId = req.params.id;
-  const newLikesCount = req.body.likes;
+
+const updateLikes = async (req, res) => {
+  const { id: commentId } = req.params; 
+  const { userId } = req.body; 
 
   try {
-    const comment = await Comment.findByIdAndUpdate(
-      commentId,
-      {
-        likes: newLikesCount,
-      },
-      {
-        new: true,
-      },
-    );
-    res.json(comment);
-  } catch (err) {
-    res
-      .status(400)
-      .json({ message: "Cannot update the likes count of this comment" });
+    // 查詢評論
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    // 檢查用戶是否已按讚
+    const hasLiked = comment.likedBy.includes(userId);
+
+    if (hasLiked) {
+      // 如果已按讚，執行取消按讚
+      comment.likedBy = comment.likedBy.filter((id) => id.toString() !== userId);
+      comment.likes -= 1;
+    } else {
+      // 如果未按讚，執行按讚
+      comment.likedBy.push(userId);
+      comment.likes += 1;
+    }
+
+    await comment.save();
+
+    res.status(200).json({
+      message: hasLiked ? "Like removed" : "Like added",
+      likes: comment.likes,
+      likedBy: comment.likedBy,
+    });
+  } catch (error) {
+    console.error("Error updating likes:", error);
+    res.status(500).json({ message: "Error updating likes" });
   }
-};
+}
+
+
 
 module.exports = {
   getCommentsByRestaurant,
