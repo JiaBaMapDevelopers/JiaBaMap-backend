@@ -7,9 +7,12 @@ const mongoose = require("mongoose");
 
 const restaurantsRouter = require("./routes/restaurants");
 const commentsRouter = require("./routes/comments");
-const articlelistRouter = require('./routes/articlelist');
+const articlelistRouter = require("./routes/articlelist");
 const userRouter = require("./routes/users");
 const authRouter = require("./routes/auth");
+const storeRouter = require("./routes/store");
+const orderRouter = require("./routes/order");
+const linepayRouter = require("./routes/linepay");
 
 require("dotenv").config();
 
@@ -19,66 +22,31 @@ mongoose
   .then(() => console.log("Local MongoDB connected successfully"))
   .catch((err) => console.log("MongoDB connection error:", err));
 
-mongoose.connection.on('disconnected', () => {
-  console.log('MongoDB disconnected. Attempting to reconnect...');
+mongoose.connection.on("error", (err) => {
+  console.error("MongoDB connection error:", err);
 });
 
-mongoose.connection.on('error', (err) => {
-  console.error('MongoDB connection error:', err);
-});
-
-mongoose.connection.on('connected', () => {
-  console.log('MongoDB connected');
+mongoose.connection.once("open", () => {
+  console.log("MongoDB connected successfully");
 });
 
 const app = express();
 
-
-
-// {
-//   origin: process.env.FRONTEND_URL,
-//   credentials: true,
-//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-//   allowedHeaders: ['Content-Type', 'Authorization']
-// }
-
-
-app.get('/test', (_req, res) => {
-  res.json({ message: 'API is working!' });
-});
-
-app.use(cors({
-  origin: process.env.FRONTEND_URL,
-  credentials: true
-}));
+app.use(cors());
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
-app.use(cors())
 
 app.use("/restaurants", restaurantsRouter);
 app.use("/comments", commentsRouter);
-app.use('/articles', articlelistRouter);
+app.use("/articles", articlelistRouter);
 app.use("/user", userRouter);
 app.use("/auth", authRouter);
-
-// 添加 404 處理
-app.use((req, res, _next) => {
-  console.log(`404 Not Found: ${req.method} ${req.url}`);
-  res.status(404).json({ 
-    error: 'Not Found',
-    path: req.url
-  });
-});
-
-// 錯誤處理中間件
-app.use((err, _req, res, _next) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({
-    error: err.message || 'Internal Server Error'
-  });
-});
+app.use("/store", storeRouter);
+app.use("/order", orderRouter);
+app.use("/payments/linepay", linepayRouter);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 module.exports = app;
