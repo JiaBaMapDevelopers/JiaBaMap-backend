@@ -8,7 +8,7 @@ const orderDetailSchema = new mongoose.Schema({
   },
   productId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Product",
+    ref: "Menu",
     required: true,
   },
   quantity: {
