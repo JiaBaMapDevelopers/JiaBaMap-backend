@@ -7,6 +7,7 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger-output.json");
 const mongoose = require("mongoose");
 
+const notificationRouter = require("./routes/notification");
 const restaurantsRouter = require("./routes/restaurants");
 const commentsRouter = require("./routes/comments");
 const articlelistRouter = require('./routes/articlelist');
@@ -19,9 +20,6 @@ const app = express();
 const server = http.createServer(app);
 initializeSocket(server);
 
-server.listen(4000, () => {
-  console.log("Server is running on port 4000");
-});
 
 require("dotenv").config();
 
@@ -39,7 +37,6 @@ mongoose.connection.once('open', () => {
   console.log('MongoDB connected successfully');
 });
 
-
 // app.use(cors({
 //   origin: process.env.FRONTEND_URL,
 //   credentials: true
@@ -56,6 +53,10 @@ app.use("/comments", commentsRouter);
 app.use('/articles', articlelistRouter);
 app.use("/user", userRouter);
 app.use("/auth", authRouter);
+app.use("/notification", notificationRouter);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.get("/test", (req, res) => {
+  res.json({ message: "Hello World!" });
+})
 
 module.exports = app;

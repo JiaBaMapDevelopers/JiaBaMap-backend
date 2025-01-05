@@ -6,4 +6,8 @@ router.get("/:id", controller.getProfile);
 
 router.put("/update/:id", controller.updateProfile);
 
+router.get("/test", (req, res) => {
+  res.json({ message: "test" });
+});
+
 module.exports = router;

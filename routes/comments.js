@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const controller = require("../controllers/commentsController");
 const notificationMiddleware = require("../middlewares/notificationMiddleWare");
+
 //依照餐廳的placeId搜尋所有評論
 router.get(
   "/restaurant/:placeId",
@@ -107,7 +108,7 @@ router.delete(
 //body直接提供更新後的數字
 router.put(
   "/likes/:id",
-  notificationMiddleware.notifyOnLikeUpdate,
+  notificationMiddleware.notifyOnCommentLike,
   controller.updateLikes,
   /* 	
     #swagger.summary = 'Update likes'

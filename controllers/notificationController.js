@@ -6,26 +6,37 @@ const { getIO } = require("../socketConfig.js");
 
 // 創建通知
 exports.createNotification = async ({ receiverId, actionUserId, actionType, relatedId }) => {
-  const sender = await User.findById(actionUserId);
-  const notification = await Notification.create({
-    notificationId: new mongoose.Types.ObjectId(),
-    userId: receiverId,
-    storeId: sender.storeId,
-    commentId: relatedId,
-    userImg: sender.userImg,
-    userName: sender.userName,
-    storeName: sender.storeName,
-    actionType,
-    read: false,
-    timestamp: new Date(),
-  });
-  const io = getIO();
-  io.to(receiverId).emit("newNotification", {
-    notification,
-    message: `${sender.userName} ${actionType === 'comment' ? 'commented on your post' : 'liked your post'} `,
-  });
+  try {
+    const sender = await User.findById(actionUserId);
+    if (!sender) {
+      throw new Error('Sender not found');
+    }
 
-  return notification;
+    const notification = await Notification.create({
+      notificationId: new mongoose.Types.ObjectId(),
+      userId: receiverId,
+      storeId: sender.storeId,
+      commentId: relatedId,
+      userImg: sender.userImg,
+      userName: sender.userName,
+      storeName: sender.storeName,
+      actionType,
+      read: false,
+      timestamp: new Date(),
+    });
+
+    const io = getIO();
+    // 確保 receiverId 轉換為字串
+    io.to(receiverId.toString()).emit("newNotification", {
+      notification,
+      message: `${sender.userName} ${actionType === 'comment' ? 'commented on your post' : 'liked your post'} `,
+    });
+
+    return notification;
+  } catch (error) {
+    console.error('Error creating notification:', error);
+    throw error;
+  }
 };
 
 exports.markAsRead = async (req, res) => {
