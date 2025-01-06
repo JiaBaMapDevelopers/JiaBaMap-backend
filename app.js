@@ -3,8 +3,6 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const cors = require("cors");
-const swaggerUi = require("swagger-ui-express");
-const swaggerDocument = require("./swagger-output.json");
 const mongoose = require("mongoose");
 
 const restaurantsRouter = require("./routes/restaurants");
@@ -24,7 +22,7 @@ console.log("MONGO_URI:", process.env.MONGO_URI); // 測試環境變數是否正
 // Initialize MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected successfully"))
+  .then(() => console.log("Local MongoDB connected successfully"))
   .catch((err) => console.log("MongoDB connection error:", err));
 
 mongoose.connection.on("error", (err) => {
