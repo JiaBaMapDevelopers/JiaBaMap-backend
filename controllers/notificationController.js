@@ -1,36 +1,27 @@
-const mongoose = require("mongoose");
-const Notification = require("../models/notificationModel");
-const User = require("../models/usersModel");
-const { getIO } = require("../socketConfig.js");
+const Notification = require('../models/notificationModel');
+const NotificationService = require('../services/notificationService');
+const { getIO } = require('../socketConfig');
 
-
-// 創建通知
-exports.createNotification = async ({ receiverId, actionUserId, actionType, relatedId }) => {
+const createNotification = async ({
+  userId,
+  targetUserId,
+  relatedType,
+  actionType,
+  metadata = {}
+}) => {
   try {
-    const sender = await User.findById(actionUserId);
-    if (!sender) {
-      throw new Error('Sender not found');
-    }
-
     const notification = await Notification.create({
-      notificationId: new mongoose.Types.ObjectId(),
-      userId: receiverId,
-      storeId: sender.storeId,
-      commentId: relatedId,
-      userImg: sender.userImg,
-      userName: sender.userName,
-      storeName: sender.storeName,
+      userId,
+      targetUserId,
+      relatedType,
       actionType,
-      read: false,
-      timestamp: new Date(),
+      metadata,
+      createdAt: new Date()
     });
 
+    // 發送 WebSocket 通知
     const io = getIO();
-    // 確保 receiverId 轉換為字串
-    io.to(receiverId.toString()).emit("newNotification", {
-      notification,
-      message: `${sender.userName} ${actionType === 'comment' ? 'commented on your post' : 'liked your post'} `,
-    });
+    io.to(targetUserId.toString()).emit('newNotification', { notification });
 
     return notification;
   } catch (error) {
@@ -39,41 +30,61 @@ exports.createNotification = async ({ receiverId, actionUserId, actionType, rela
   }
 };
 
-exports.markAsRead = async (req, res) => {
-  try {
-    const { notificationId } = req.params;
-    const notification = await Notification.findByIdAndUpdate(
-      notificationId, 
-      { read: true }, 
-      { new: true }
-    );
-    
-    if (!notification) {
-      return res.status(404).json({ message: "Notification not found" });
+class NotificationController {
+  // 獲取用戶通知
+  static async getNotifications(req, res) {
+    try {
+      const { userId } = req.params;
+      const { page = 1, limit = 20 } = req.query;
+      const notifications = await NotificationService.getUserNotifications(userId, page, limit);
+      res.status(200).json(notifications);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching notifications", error });
     }
-
-    const io = getIO();
-    io.to(notification.userId).emit("readNotification", {
-      notificationId,
-      message: "Notification marked as read",
-    });
-    
-    res.status(200).json(notification);
-  } catch (error) {
-    res.status(500).json({ message: "Error updating notification", error });
   }
-};
 
-exports.getNotifications = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const notifications = await Notification.find({ userId })
-    .sort({ timestamp: -1 });
-    res.status(200).json(notifications);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching notifications", error });
+  // 獲取未讀通知數量
+  static async getUnreadCount(req, res) {
+    try {
+      const { userId } = req.params;
+      const count = await Notification.getUnreadCount(userId);
+      res.status(200).json({ count });
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching unread count", error });
+    }
   }
-};
 
+  // 標記通知為已讀
+  static async markAsRead(req, res) {
+    try {
+      const { notificationId } = req.params;
+      const { userId } = req.user;
+      
+      const notification = await NotificationService.markAsRead(userId, notificationId);
+      
+      if (!notification) {
+        return res.status(404).json({ message: "Notification not found" });
+      }
+      
+      res.status(200).json(notification);
+    } catch (error) {
+      res.status(500).json({ message: "Error marking notification as read", error });
+    }
+  }
 
-module.exports = exports;
+  // 批量標記已讀
+  static async markMultipleAsRead(req, res) {
+    try {
+      const { notificationIds } = req.body;
+      const { userId } = req.params;
+      
+      await Notification.markMultipleAsRead(userId, notificationIds);
+      
+      res.status(200).json({ message: "Notifications marked as read" });
+    } catch (error) {
+      res.status(500).json({ message: "Error marking notifications as read", error });
+    }
+  }
+}
+
+module.exports = { NotificationController, createNotification };

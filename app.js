@@ -6,6 +6,10 @@ const cors = require("cors");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger-output.json");
 const mongoose = require("mongoose");
+const http = require("http");
+
+require("dotenv").config();
+
 
 const notificationRouter = require("./routes/notification");
 const restaurantsRouter = require("./routes/restaurants");
@@ -13,15 +17,7 @@ const commentsRouter = require("./routes/comments");
 const articlelistRouter = require('./routes/articlelist');
 const userRouter = require("./routes/users");
 const authRouter = require("./routes/auth");
-const http = require("http");
-const { initializeSocket } = require("./socketConfig.js");
 
-const app = express();
-const server = http.createServer(app);
-initializeSocket(server);
-
-
-require("dotenv").config();
 
 // Initialize MongoDB connection
 mongoose
@@ -35,6 +31,19 @@ mongoose.connection.on('error', (err) => {
 
 mongoose.connection.once('open', () => {
   console.log('MongoDB connected successfully');
+});
+
+const app = express();
+const server = http.createServer(app);
+
+const { initializeSocket } = require("./socketConfig");
+initializeSocket(server);
+
+const port =5001;
+server.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+}).on('error', (err) => {
+  console.error('Error starting server:', err);
 });
 
 // app.use(cors({
