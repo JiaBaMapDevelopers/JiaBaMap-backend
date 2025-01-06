@@ -80,7 +80,7 @@ app.use('/uploads', express.static('uploads'));
 app.use("/store", storeRouter);
 app.use("/order", orderRouter);
 app.use("/payments/linepay", linepayRouter);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get("/test", (req, res) => {
   res.json({ message: "Hello World!" });
 })
