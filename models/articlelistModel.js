@@ -61,10 +61,10 @@ const articleSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  placeId: {
-    type: String,
-    required: true
-  },
+  // placeId: {
+  //   type: String,
+  //   required: true
+  // },
   title: {
     type: String,
     required: true
@@ -74,7 +74,8 @@ const articleSchema = new mongoose.Schema({
     required: true
   },
   photo: {
-    type: String,
+    type: [String],
+    default: [],
     required: true
   },
   createdAt: {

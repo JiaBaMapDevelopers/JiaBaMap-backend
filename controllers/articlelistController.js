@@ -1,4 +1,5 @@
 const Article = require('../models/articlelistModel');
+const { uploadPhotos } = require("../utils");
 
 exports.getAllArticles = async (_req, res) => {
   try {
@@ -13,23 +14,24 @@ exports.createArticle = async (req, res) => {
   try {
     const { userId, placeId, title, content, photo, location, price, openHours } = req.body;
 
-    if (!userId || !placeId || !title || !content) {
-      return res.status(400).json({ 
-        message: "UserId, placeId, title, and content are required" 
-      });
-    }
+    // if (!userId || !title || !content) {
+    //   return res.status(400).json({ 
+    //     message: "UserId, placeId, title, and content are required" 
+    //   });
+    // }
 
-    const article = new Article({
-      userId,
-      placeId,
-      title,
-      content,
-      photo,
-      location,
-      price,
-      openHours
-    });
-
+    const photoUrls = await uploadPhotos(req.files);
+    // const article = new Article({
+    //   userId,
+    //   placeId,
+    //   title,
+    //   content,
+    //   photo: photoUrls,
+    //   location,
+    //   price,
+    //   openHours
+    // });
+    const article = new Article({...req.body, photo: photoUrls});
     const savedArticle = await article.save();
     res.status(201).json(savedArticle);
   } catch (error) {
