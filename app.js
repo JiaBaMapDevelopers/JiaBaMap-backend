@@ -46,6 +46,13 @@ server.listen(port, () => {
   console.error('Error starting server:', err);
 });
 
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  methods: ["GET", "POST", "PATCH", "DELETE"],
+  credentials: true
+}));
+
+
 // app.use(cors({
 //   origin: process.env.FRONTEND_URL,
 //   credentials: true
@@ -55,7 +62,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
-app.use(cors())
+// app.use(cors())
 
 app.use("/restaurants", restaurantsRouter);
 app.use("/comments", commentsRouter);

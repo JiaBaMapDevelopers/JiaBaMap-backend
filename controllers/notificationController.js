@@ -3,29 +3,43 @@ const NotificationService = require('../services/notificationService');
 const { getIO } = require('../socketConfig');
 
 const createNotification = async ({
-  userId,
-  targetUserId,
-  relatedType,
+  receiverId,
+  actionUserId,
   actionType,
-  metadata = {}
+  relatedId,
+  relatedType,
+  additionalData = {}
 }) => {
   try {
     const notification = await Notification.create({
-      userId,
-      targetUserId,
-      relatedType,
+      userId: actionUserId,
+      targetUserId: receiverId,
       actionType,
-      metadata,
-      createdAt: new Date()
+      relatedType,
+      relatedId,
+      metadata: {
+        ...additionalData,
+        originalContent: additionalData.content
+      }
     });
 
-    // 發送 WebSocket 通知
     const io = getIO();
-    io.to(targetUserId.toString()).emit('newNotification', { notification });
+    io.to(receiverId.toString()).emit('newNotification', { 
+      notification: {
+        _id: notification._id,
+        userId: notification.userId,
+        actionType: notification.actionType,
+        relatedType: notification.relatedType,
+        relatedId: notification.relatedId,
+        metadata: notification.metadata,
+        read: notification.read,
+        createdAt: notification.createdAt
+      }
+    });
 
     return notification;
   } catch (error) {
-    console.error('Error creating notification:', error);
+    console.error('建立通知時發生錯誤:', error);
     throw error;
   }
 };
