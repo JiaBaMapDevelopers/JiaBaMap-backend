@@ -42,9 +42,6 @@
           "200": {
             "description": "OK"
           },
-          "400": {
-            "description": "Bad Request"
-          },
           "404": {
             "description": "Not Found"
           }
@@ -191,17 +188,23 @@
         }
       }
     },
-    "/comments/restaurant/{placeId}": {
+    "/comments/restaurant/{id}": {
       "get": {
         "summary": "Search comments of the same restaurant",
         "description": "Endpoint to search comments based on the placeId",
         "parameters": [
           {
-            "name": "placeId",
+            "name": "id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "description": "The placeId of restaurant"
+            "type": "string"
+          },
+          {
+            "name": "placeId",
+            "in": "path",
+            "description": "The placeId of restaurant",
+            "required": true,
+            "type": "string"
           }
         ],
         "responses": {
@@ -214,17 +217,23 @@
         }
       }
     },
-    "/comments/user/{userId}": {
+    "/comments/user/{id}": {
       "get": {
         "summary": "Search comments of the same user",
         "description": "Endpoint to search comments based on the userId",
         "parameters": [
           {
-            "name": "userId",
+            "name": "id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "description": "The userId of user"
+            "type": "string"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "The userId of user",
+            "required": true,
+            "type": "string"
           }
         ],
         "responses": {
@@ -760,6 +769,23 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -768,6 +794,75 @@
           },
           "400": {
             "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/user/favorites/{id}": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "placeId": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/user/favorites/delete/{id}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "placeId": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
@@ -816,9 +911,6 @@
               "properties": {
                 "id": {
                   "example": "any"
-                },
-                "name": {
-                  "example": "any"
                 }
               }
             }
@@ -830,6 +922,349 @@
           },
           "401": {
             "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/menu/": {
+      "post": {
+        "summary": "新增菜單",
+        "description": "新增一筆菜單資料，包含圖片上傳功能",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "parameters": [
+          {
+            "name": "image",
+            "in": "formData",
+            "description": "上傳圖片 (jpeg, jpg, png, gif)",
+            "required": false,
+            "type": "file"
+          },
+          {
+            "name": "name",
+            "in": "formData",
+            "description": "菜單名稱",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "price",
+            "in": "formData",
+            "description": "價格",
+            "required": true,
+            "type": "number"
+          },
+          {
+            "name": "category",
+            "in": "formData",
+            "description": "分類 (飲料、主食、甜點、湯品)",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "storeId",
+            "in": "formData",
+            "description": "餐廳 ID",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "example": "any"
+                },
+                "price": {
+                  "example": "any"
+                },
+                "category": {
+                  "example": "any"
+                },
+                "storeId": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "新增成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "1234567890"
+                },
+                "name": {
+                  "type": "string",
+                  "example": "牛肉湯"
+                },
+                "price": {
+                  "type": "number",
+                  "example": 200
+                },
+                "category": {
+                  "type": "string",
+                  "example": "湯品"
+                },
+                "storeId": {
+                  "type": "string",
+                  "example": "67720e635123faace157e5b3"
+                },
+                "imageUrl": {
+                  "type": "string",
+                  "example": "https://storage.googleapis.com/test-bucket/image1.jpg"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "get": {
+        "summary": "查詢所有菜單",
+        "description": "支援名稱、分類、價格篩選與分頁功能。",
+        "parameters": [
+          {
+            "name": "minPrice",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "maxPrice",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "根據名稱模糊搜尋",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "description": "根據分類篩選",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "分頁：第幾頁",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查詢成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "totalCount": {
+                  "type": "number",
+                  "example": 100
+                },
+                "totalPages": {
+                  "type": "number",
+                  "example": 10
+                },
+                "currentPage": {
+                  "type": "number",
+                  "example": 1
+                },
+                "menus": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "example": "1234567890"
+                      },
+                      "name": {
+                        "type": "string",
+                        "example": "牛肉湯"
+                      },
+                      "price": {
+                        "type": "number",
+                        "example": 200
+                      },
+                      "category": {
+                        "type": "string",
+                        "example": "湯品"
+                      },
+                      "storeId": {
+                        "type": "string",
+                        "example": "67720e635123faace157e5b3"
+                      },
+                      "imageUrl": {
+                        "type": "string",
+                        "example": "https://storage.googleapis.com/test-bucket/image1.jpg"
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/menu/{id}": {
+      "put": {
+        "summary": "更新菜單",
+        "description": "更新指定菜單資料，包含圖片上傳功能",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "菜單 ID"
+          },
+          {
+            "name": "image",
+            "in": "formData",
+            "description": "上傳圖片 (jpeg, jpg, png, gif)",
+            "required": false,
+            "type": "file"
+          },
+          {
+            "name": "name",
+            "in": "formData",
+            "description": "菜單名稱",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "price",
+            "in": "formData",
+            "description": "價格",
+            "required": false,
+            "type": "number"
+          },
+          {
+            "name": "category",
+            "in": "formData",
+            "description": "分類 (飲料、主食、甜點、湯品)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "example": "any"
+                },
+                "price": {
+                  "example": "any"
+                },
+                "category": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "1234567890"
+                },
+                "name": {
+                  "type": "string",
+                  "example": "牛肉湯"
+                },
+                "price": {
+                  "type": "number",
+                  "example": 250
+                },
+                "category": {
+                  "type": "string",
+                  "example": "湯品"
+                },
+                "storeId": {
+                  "type": "string",
+                  "example": "67720e635123faace157e5b3"
+                },
+                "imageUrl": {
+                  "type": "string",
+                  "example": "https://storage.googleapis.com/test-bucket/image1.jpg"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "刪除菜單",
+        "description": "刪除指定的菜單",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "菜單 ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }

@@ -3,11 +3,14 @@ const router = express.Router();
 const articleController = require('../controllers/articlelistController');
 const notificationMiddleWare  = require('../middlewares/notificationMiddleWare');
 
-// 獲取所有文章
+// 獲取所有食記
 router.get('/', articleController.getAllArticles);
 
-// 創建新文章
+// 新增食記
 router.post('/', articleController.createArticle);
+
+// 刪除食記
+router.delete('/:id', articleController.deleteArticle);
 
 // 文章按讚/取消按讚
 router.post('/:id/like', articleController.toggleLike, notificationMiddleWare.notifyOnArticleLike);
@@ -29,5 +32,13 @@ router.delete('/:articleId/comments/:commentId/replies/:replyId', articleControl
 
 // 回覆按讚/取消按讚
 router.post('/:articleId/comments/:commentId/replies/:replyId/like', articleController.toggleReplyLike, notificationMiddleWare.notifyOnArticleReplyLike);
+
+router.get('/published/:userId', articleController.getPublishedArticles);
+
+// 獲取單篇食記
+router.get('/:id', articleController.getArticleById);
+
+// 修改已發布食記
+router.patch('/:id', articleController.updateArticle);
 
 module.exports = router;
