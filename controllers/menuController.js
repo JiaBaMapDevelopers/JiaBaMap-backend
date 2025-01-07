@@ -132,7 +132,7 @@ res.status(200).json({
   totalCount, // 總資料數
   totalPages: Math.ceil(totalCount / limit), // 總頁數
   currentPage: page, // 當前頁數
-  menus // 資料內容
+  menus
 });
 } catch (error) {
 res.status(500).json({ message: '查詢失敗', error });
