@@ -5,7 +5,7 @@ const notificationSchema = new mongoose.Schema({
   storeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Store' },
   commentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Comment' },
   userImg: { type: String },
-  userName: { type: String, required: true },
+  userName: { type: String },
   storeName: { type: String },
   actionType: { 
     type: String, 
@@ -14,7 +14,6 @@ const notificationSchema = new mongoose.Schema({
   },
   contentType: {
     type: String,
-    required: true,
     enum: ['article', 'comment', 'reply']
   },
   read: { type: Boolean, default: false },

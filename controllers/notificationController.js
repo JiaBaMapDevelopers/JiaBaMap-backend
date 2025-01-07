@@ -11,6 +11,7 @@ const createNotification = async ({
   additionalData = {}
 }) => {
   try {
+    console.log(receiverId, actionUserId, actionType, relatedId, relatedType, additionalData);
     const notification = await Notification.create({
       userId: actionUserId,
       targetUserId: receiverId,
@@ -22,7 +23,7 @@ const createNotification = async ({
         originalContent: additionalData.content
       }
     });
-
+    
     const io = getIO();
     io.to(receiverId.toString()).emit('newNotification', { 
       notification: {
