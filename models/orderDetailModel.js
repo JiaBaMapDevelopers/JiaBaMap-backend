@@ -7,7 +7,7 @@ const orderDetailSchema = new mongoose.Schema({
     required: true,
   },
   productId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Number,
     ref: "Menu",
     required: true,
   },

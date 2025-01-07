@@ -68,7 +68,7 @@ const getOrders = async (req, res) => {
 
     const response = orders.map((order) => ({
       orderId: order._id,
-      restaurantName: order.storeId.name,
+      restaurantName: order.storeId?.name || "未知餐廳",
       customerId: order.customerId,
       totalAmount: order.totalAmount,
       orderTime: order.orderTime,
@@ -76,6 +76,7 @@ const getOrders = async (req, res) => {
     }));
     res.status(200).json(response);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "取得訂單發生錯誤，請稍後再試" });
   }
 };
@@ -85,32 +86,38 @@ const getOrderDetails = async (req, res) => {
   const { orderId } = req.params;
 
   const order = await Order.findById(orderId)
-    .populate("storeId", "name ")
+    .populate("storeId", "name phone address")
     .lean();
 
   if (!order) {
     return res.status(404).json({ message: "訂單不存在" });
   }
+  if (!order.storeId) {
+    return res.status(404).json({ message: "餐廳資訊不存在" });
+  }
+
   try {
     const orderDetails = await OrderDetail.find({ orderId })
-      .populate("productId", "name price storeId")
+      .populate("productId")
       .lean();
 
+    console.log("orderDetails: ", orderDetails);
     const response = {
       orderId: order._id,
       restaurantName: order.storeId.name,
+      phone: order.storeId.phone,
+      address: order.storeId.address,
       customerId: order.customerId,
       totalAmount: order.totalAmount,
       pickupTime: order.pickupTime,
       orderTime: order.orderTime,
       isPaid: order.isPaid,
       items: orderDetails.map((detail) => ({
-        productId: detail.productId._id,
-        productName: detail.productId.name,
+        productId: detail.productId?._id || "測試飲料id",
+        productName: detail.productId?.name || "測試飲料",
         quantity: detail.quantity,
-        note: detail.note,
-        spec: detail.spec,
-        price: detail.productId.price,
+        price: detail.productId?.price || 0,
+        spec: detail.productId?.spec || "大杯",
       })),
     };
     res.status(200).json(response);

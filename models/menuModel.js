@@ -1,15 +1,6 @@
 const mongoose = require("mongoose");
 
 const menuSchema = new mongoose.Schema({
-  storeId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Store",
-    required: true,
-  },
-  itemId: {
-    type: Number,
-    unique: true,
-  },
   name: {
     type: String,
     required: [true, "名稱為必填項目"],
@@ -31,11 +22,15 @@ const menuSchema = new mongoose.Schema({
   },
   description: {
     type: String,
+    maxlength: 65535,
   },
-  placeId: {
-    type: String,
-    unique: true,
+  storeId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Store",
     required: true,
+  },
+  itemId: {
+    type: Number,
   },
   createdAt: {
     type: Date,
@@ -43,8 +38,10 @@ const menuSchema = new mongoose.Schema({
   },
   imageUrl: {
     type: String,
-    default: null,
+    default: "",
   },
 });
 
-module.exports = mongoose.model("Menu", menuSchema);
+const Menu = mongoose.model("Menu", menuSchema);
+
+module.exports = Menu;

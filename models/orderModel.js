@@ -18,7 +18,6 @@ const orderSchema = new mongoose.Schema({
   },
   pickupTime: {
     type: Date,
-    required: true,
   },
   totalAmount: {
     type: Number,
