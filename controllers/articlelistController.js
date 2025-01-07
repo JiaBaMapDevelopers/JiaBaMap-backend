@@ -1,4 +1,5 @@
 const Article = require('../models/articlelistModel');
+const { uploadPhotos } = require("../utils");
 
 exports.getAllArticles = async (req, res) => {
   try {
@@ -44,7 +45,7 @@ exports.createArticle = async (req, res) => {
         message: "UserId, placeId, title, eatdate and content are required" 
       });
     }
-    
+    const photoUrls = await uploadPhotos(req.files);
     const article = new Article({
       userId,
       placeId,
@@ -53,7 +54,7 @@ exports.createArticle = async (req, res) => {
       user,
       userPhoto,
       restaurantName,
-      photo: photo || '',  // 設置默認值
+      photo: photoUrls || '',  // 設置默認值
       eatdateAt: new Date(eatdate),
       status: 'published'
     });

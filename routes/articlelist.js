@@ -1,12 +1,21 @@
 const express = require('express');
+const multer = require("multer");
 const router = express.Router();
 const articleController = require('../controllers/articlelistController');
 
-// 獲取所有食記
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 4 * 1024 * 1024,
+  },
+});
+
+// 獲取所有文章
 router.get('/', articleController.getAllArticles);
 
-// 新增食記
-router.post('/', articleController.createArticle);
+// 創建新文章
+router.post('/',upload.array("photo"), articleController.createArticle);
 
 // 刪除食記
 router.delete('/:id', articleController.deleteArticle);
