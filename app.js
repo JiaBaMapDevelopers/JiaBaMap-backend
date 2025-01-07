@@ -54,7 +54,7 @@ server.listen(port, () => {
 
 app.use(cors({
   origin: process.env.FRONTEND_URL || "http://localhost:5173",
-  methods: ["GET", "POST", "PATCH", "DELETE"],
+  methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
   credentials: true
 }));
 
