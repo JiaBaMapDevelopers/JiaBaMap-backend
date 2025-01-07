@@ -53,24 +53,7 @@ router.get(
 router.post(
   "/",
   upload.array("photos", 5),
-  controller.createComment,
-  /* 
-    #swagger.summary = 'Create a new comment'
-    #swagger.description = 'Create a new comment for a specific place by a user. The comment includes userId, placeId, content, and rating.'
-  */
-  /* 
-    #swagger.parameters['body'] = {
-      in: 'body',
-      description: 'The details of the comment to be created.',
-      required: true,
-      schema: {
-        userId: 'string',
-        placeId: 'string',
-        content: 'string',
-        rating: 'number'
-      }
-    }
-  */
+  controller.createComment
 );
 
 //更新一筆評論
@@ -116,20 +99,7 @@ router.delete(
 //body直接提供更新後的數字
 router.put(
   "/likes/:id",
-  controller.updateLikes,
-  /* 	
-    #swagger.summary = 'Update likes'
-    #swagger.description = 'Update the likes of comment'
-    */
-
-  /* 
-    #swagger.parameters['id'] = {
-      in: 'path',
-      description: 'The id of the comment',
-      required: 'true',
-      type: 'string',
-    }
-  */
+  controller.updateLikes
 );
 
 module.exports = router;
