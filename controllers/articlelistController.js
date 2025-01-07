@@ -1,66 +1,154 @@
 const Article = require('../models/articlelistModel');
+const { uploadPhotos } = require("../utils");
+const { Storage } = require("@google-cloud/storage");
 
-exports.getAllArticles = async (_req, res) => {
+exports.getAllArticles = async (req, res) => {
   try {
+    const userId = req.query.userId;  // 從查詢參數獲取用戶ID
     const articles = await Article.find().sort({ createdAt: -1 });
-    res.json(articles);
+
+    // 如果有用戶ID，檢查每篇文章的按讚狀態
+    const articlesWithLikeStatus = articles.map(article => {
+      const articleObj = article.toObject();
+      if (userId) {
+        // 檢查文章是否被當前用戶按讚
+        articleObj.isLiked = article.likedBy.includes(userId);
+
+        // 檢查評論的按讚狀態
+        articleObj.comments = article.comments.map(comment => {
+          const commentObj = comment.toObject();
+          commentObj.isLiked = comment.likedBy.includes(userId);
+
+          // 檢查回覆的按讚狀態
+          commentObj.replies = comment.replies.map(reply => {
+            const replyObj = reply.toObject();
+            replyObj.isLiked = reply.likedBy.includes(userId);
+            return replyObj;
+          });
+
+          return commentObj;
+        });
+      }
+      return articleObj;
+    });
+
+    res.json(articlesWithLikeStatus);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
 exports.createArticle = async (req, res) => {
-  try {
-    const { userId, placeId, title, content, photo, location, price, openHours } = req.body;
-
-    if (!userId || !placeId || !title || !content) {
+  const { userId, placeId, title, content, photo, user, userPhoto, eatdate, restaurantName } = req.body;
+  
+  if (!userId || !restaurantName || !title || !content || !eatdate) {
       return res.status(400).json({ 
-        message: "UserId, placeId, title, and content are required" 
+        message: "UserId, placeId, title, eatdate and content are required" 
       });
     }
-
+    async function uploadPhotos(files) {
+      //TODO upload photos to GCS
+      const storage = new Storage({
+        projectId: process.env.GOOGLE_PROJECT_ID,
+      });
+      const photoUrls = [];
+      for (const file of files) {
+        const bucketName = process.env.BUCKET_NAME;
+        const fileName = encodeURIComponent(file.originalname);
+        const objectName = `article/${fileName}`;
+        await storage.bucket(bucketName).file(objectName).save(file.buffer);
+        const url = `${process.env.GOOGLE_CLOUD_STORAGE_BASE_URL}${bucketName}/${objectName}`;
+        photoUrls.push(url);
+      }
+      return photoUrls;
+    }
+    const photoUrls = await uploadPhotos(req.files);
     const article = new Article({
       userId,
       placeId,
       title,
       content,
-      photo,
-      location,
-      price,
-      openHours
+      user,
+      userPhoto,
+      restaurantName,
+      photo: photoUrls || '',  // 設置默認值
+      eatdateAt: new Date(eatdate),
+      status: 'published'
+    });
+    
+    res.status(200).json({
+      message: '食記已成功建立'
     });
 
-    const savedArticle = await article.save();
-    res.status(201).json(savedArticle);
+    try {
+    await article.save();     
   } catch (error) {
-    console.error(error);
-    res.status(400).json({ message: "Cannot create a new article" });
+    res.status(400).json({ 
+      message: error.message || "Cannot create a new article",
+      details: error.toString()  
+    });
   }
 };
 
-// 通用的按讚處理函數
-const handleLike = async (doc, userId) => {
-  const isLiked = doc.likedBy.includes(userId);
+
+
+exports.deleteArticle = async (req, res) => {
   
-  if (isLiked) {
-    // 取消按讚
-    doc.likedBy = doc.likedBy.filter(id => id !== userId);
-    doc.likesCount = Math.max(0, doc.likesCount - 1);
-  } else {
-    // 添加按讚
-    doc.likedBy.push(userId);
-    doc.likesCount++;
-  }
+    const { id } = req.params;
+    
+    // 只刪除指定的文章
+    await Article.findByIdAndDelete(id);
+    
+    res.status(200).json({
+      message: '文章已成功刪除'
+    });
   
-  return {
-    isLiked: !isLiked,
-    likesCount: doc.likesCount
-  };
 };
+
+
+
+// 新增獲取已發布文章的控制器
+exports.getPublishedArticles = async (req, res) => {
+    try {
+      const userId = req.params.userId;  // 從 URL 參數獲取 userId
+      if (!userId) {
+        return res.status(400).json({ message: 'UserId is required' });
+      }
+  
+      const articles = await Article.find({ 
+        userId: userId,
+        status: 'published'
+      }).sort({ createdAt: -1 });
+  
+      res.json(articles);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+
+
+  const handleLike = async (doc, userId) => {
+    const isLiked = doc.likedBy.includes(userId);
+    
+    if (isLiked) {
+      // 取消按讚
+      doc.likedBy = doc.likedBy.filter(id => id !== userId);
+      doc.likesCount = Math.max(0, doc.likesCount - 1);
+    } else {
+      // 添加按讚
+      doc.likedBy.push(userId);
+      doc.likesCount++;
+    }
+    
+    return {
+      isLiked: !isLiked,
+      likesCount: doc.likesCount,
+      likedBy: doc.likedBy  // 返回完整的按讚用戶列表
+    };
+  };
 
 // 文章按讚
 exports.toggleLike = async (req, res) => {
-  try {
     const { id } = req.params;
     const { userId } = req.body;
 
@@ -77,13 +165,13 @@ exports.toggleLike = async (req, res) => {
     await article.save();
 
     res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
 };
 
+
+
+
 exports.addComment = async (req, res) => {
-  try {
+  
     const article = await Article.findById(req.params.id);
     if (!article) {
       return res.status(404).json({ message: 'Article not found' });
@@ -91,6 +179,7 @@ exports.addComment = async (req, res) => {
 
     // 從請求體中獲取評論資料
     const { content, userId, user, userPhoto } = req.body;
+  
 
     // 驗證必要欄位
     if (!content || !userId || !user) {
@@ -110,7 +199,6 @@ exports.addComment = async (req, res) => {
       likesCount: 0,
       replies: []
     };
-
     // 添加評論到文章
     article.comments.push(newComment);
     article.updatedAt = new Date();
@@ -118,8 +206,7 @@ exports.addComment = async (req, res) => {
     
     // 返回新創建的評論
     const createdComment = article.comments[article.comments.length - 1];
-    
-    // 返回與前端格式匹配的資料
+    // 返回與前端格式匹配的資料，確保包含 user 字段
     res.status(201).json({
       _id: createdComment._id,
       content: createdComment.content,
@@ -132,39 +219,38 @@ exports.addComment = async (req, res) => {
       replies: []
     });
 
-  } catch (error) {
-    console.error('Add comment error:', error);
-    res.status(400).json({ message: error.message });
-  }
 };
 
 exports.deleteComment = async (req, res) => {
-  try {
     const article = await Article.findById(req.params.articleId);
     if (!article) {
       return res.status(404).json({ message: 'Article not found' });
     }
 
-    const commentIndex = article.comments.findIndex(
-      comment => comment._id.toString() === req.params.commentId
+    // 使用 MongoDB 的 $pull 操作符來移除評論
+    const result = await Article.findByIdAndUpdate(
+      req.params.articleId,
+      {
+        $pull: {
+          comments: { _id: req.params.commentId }
+        }
+      },
+      { new: true }  // 返回更新後的文檔
     );
 
-    if (commentIndex === -1) {
+    if (!result) {
       return res.status(404).json({ message: 'Comment not found' });
     }
 
-    article.comments.splice(commentIndex, 1);
-    await article.save();
-    
-    res.status(200).json({ message: 'Comment deleted' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+    res.status(200).json({ 
+      message: 'Comment deleted successfully',
+      article: result
+    });
 };
 
 // 評論按讚
 exports.toggleCommentLike = async (req, res) => {
-  try {
+  
     const { articleId, commentId } = req.params;
     const { userId } = req.body;
 
@@ -182,13 +268,9 @@ exports.toggleCommentLike = async (req, res) => {
     await article.save();
 
     res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
 };
 
 exports.addReply = async (req, res) => {
-  try {
     const article = await Article.findById(req.params.articleId);
     if (!article) {
       return res.status(404).json({ message: 'Article not found' });
@@ -239,14 +321,10 @@ exports.addReply = async (req, res) => {
       likesCount: 0,
       isLiked: false
     });
-
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
 };
 
 exports.deleteReply = async (req, res) => {
-  try {
+  
     const { articleId, commentId, replyId } = req.params;
 
     const article = await Article.findById(articleId);
@@ -276,16 +354,11 @@ exports.deleteReply = async (req, res) => {
     res.status(200).json({ 
       message: '回覆已刪除'
     });
-
-  } catch (error) {
-    console.error('Delete reply error:', error);
-    res.status(500).json({ message: error.message });
-  }
 };
 
 // 回覆按讚
 exports.toggleReplyLike = async (req, res) => {
-  try {
+  
     const { articleId, commentId, replyId } = req.params;
     const { userId } = req.body;
 
@@ -308,7 +381,48 @@ exports.toggleReplyLike = async (req, res) => {
     await article.save();
 
     res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+};
+
+// 獲取單篇文章
+exports.getArticleById = async (req, res) => {
+  
+    const article = await Article.findById(req.params.id);
+    if (!article) {
+      return res.status(404).json({ message: 'Article not found' });
+    }
+    res.json(article);
+};
+
+// 修改已發布文章
+exports.updateArticle = async (req, res) => {
+    const { id } = req.params;
+    const { title, content, restaurantName, placeId, photo, eatdate } = req.body;
+
+    // 驗證必要欄位
+    if (!title || !content || !eatdate) {
+      return res.status(400).json({ 
+        message: "Title, content and eatdate are required" 
+      });
+    }
+
+    // 查找並更新文章
+    const updatedArticle = await Article.findByIdAndUpdate(
+      id,
+      {
+        title,
+        content,
+        restaurantName,
+        placeId,
+        photo,
+        eatdateAt: new Date(eatdate),
+        updatedAt: new Date()
+      },
+      { new: true }  // 返回更新後的文檔
+    );
+
+    if (!updatedArticle) {
+      return res.status(404).json({ message: 'Article not found' });
+    }
+
+    res.json(updatedArticle);
 };

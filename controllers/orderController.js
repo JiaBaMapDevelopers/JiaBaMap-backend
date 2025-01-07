@@ -18,20 +18,21 @@ const calculateTotalAmount = async (items) => {
 
 //新增訂單
 const createOrder = async (req, res) => {
-  const { customerId, storeId, pickupTime, items } = req.body;
+  const { customerId, storeId, pickupTime, items, storeName } = req.body;
+
+  const totalAmount = await calculateTotalAmount(items);
+
+  const order = new Order({
+    customerId,
+    storeId,
+    pickupTime,
+    totalAmount,
+    storeName,
+  });
+
+  await order.save();
 
   try {
-    const totalAmount = await calculateTotalAmount(items);
-
-    const order = new Order({
-      customerId,
-      storeId,
-      pickupTime,
-      totalAmount,
-    });
-
-    await order.save();
-
     const orderDetails = items.map((item) => ({
       orderId: order._id,
       productId: item.productId,
@@ -49,21 +50,16 @@ const createOrder = async (req, res) => {
 
 //依照使用者id/店家id 取得所有未刪除訂單
 const getOrders = async (req, res) => {
-  const { customerId, storeId } = req.body;
-  const filter = { isDeleted: false };
+  const { customerId } = req.params;
+  const filter = {
+    isDeleted: false,
+    customerId: customerId,
+  };
 
-  if (customerId) {
-    filter.customerId = customerId;
-  }
-  if (storeId) {
-    filter.storeId = storeId;
-  }
-
+  const orders = await Order.find(filter).populate("storeName").lean();
   try {
-    const orders = await Order.find(filter).populate("storeId", "name").lean();
-
     if (!orders || orders.length === 0) {
-      return res.status(404).json({ message: "沒有找到訂單" });
+      return res.status(201).json({ message: "沒有找到訂單" });
     }
 
     const response = orders.map((order) => ({
