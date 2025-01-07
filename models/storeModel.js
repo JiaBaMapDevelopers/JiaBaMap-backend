@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
 const storeSchema = new mongoose.Schema(
   {
@@ -62,5 +63,18 @@ const storeSchema = new mongoose.Schema(
     timestamps: true, //自動管理 createdAt 和 updatedAt
   },
 );
+
+// 密碼加密
+storeSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
+  next();
+});
+
+// 密碼比對驗證
+storeSchema.methods.comparePassword = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
 
 module.exports = mongoose.model("Store", storeSchema);
