@@ -1,0 +1,1273 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "JiabaMap Backend API",
+    "description": "This is the API document of JiabaMap API which conforms to OpenAPI and rendered by Swagger UI.",
+    "version": "1.0.0"
+  },
+  "host": "localhost:3000",
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/restaurants/search": {
+      "get": {
+        "summary": "Search restaurants for the keyword",
+        "description": "Endpoint to search 15 restaurants from Google API based on the keyword and the coordinate",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "The keyword to be searched by user",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lat",
+            "in": "query",
+            "description": "The latitude to be searched by user",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lng",
+            "in": "query",
+            "description": "The longitude to be searched by user",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/restaurants/staticmap": {
+      "get": {
+        "summary": "Get staticmap image",
+        "description": "Endpoint to get staticmap image from Google API given by the location",
+        "parameters": [
+          {
+            "name": "lat",
+            "in": "query",
+            "description": "The latitude to be searched by user",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lng",
+            "in": "query",
+            "description": "The longitude to be searched by user",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/restaurants/{id}": {
+      "get": {
+        "summary": "Get place detail information",
+        "description": "Endpoint to get detail information of a place from Google API",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "The ID of a place assigned by Google Places API"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get place detail successfully.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "displayName": {
+                  "type": "string",
+                  "example": "鮨荻 sushi ogi"
+                },
+                "rating": {
+                  "type": "number",
+                  "example": 4.7
+                },
+                "userRatingCount": {
+                  "type": "number",
+                  "example": 41
+                },
+                "startPrice": {
+                  "type": "string",
+                  "example": "2000"
+                },
+                "endPrice": {},
+                "weekDayDescriptions": {
+                  "type": "array",
+                  "example": [
+                    "星期一: 休息",
+                    "星期二: 12:00 – 14:30, 18:00 – 21:30",
+                    "星期三: 12:00 – 14:30, 18:00 – 21:30",
+                    "星期四: 12:00 – 14:30, 18:00 – 21:30",
+                    "星期五: 12:00 – 14:30, 18:00 – 21:30",
+                    "星期六: 12:00 – 14:30, 18:00 – 21:30",
+                    "星期日: 休息"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "formattedAddress": {
+                  "type": "string",
+                  "example": "104004台灣台北市中山區天津街21號"
+                },
+                "websiteUri": {
+                  "type": "string",
+                  "example": "https://www.facebook.com/Sushiogi/"
+                },
+                "nationalPhoneNumber": {},
+                "googleMapsUri": {
+                  "type": "string",
+                  "example": "https://maps.google.com/?cid=10555472622014893236"
+                },
+                "openNow": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "photoIds": {
+                  "type": "array",
+                  "example": [
+                    "places/ChIJXb0k11GpQjQRtAyPp2ySfJI/photos/AdDdOWpEd8Nnf4pdqwGqklFuTnLL5v2tEO3Pzs00AONzEElI4ABs3Dp4J6aiQiXxr9eTbQ5O6pnENPKrGDSZXN4s1DL6gP33hGtcZuzqhpfji0hNWPo6U80iIMltTWctOaER8CYm0QrU22N4tyjM-8boOp14sdsho8CpSbrA",
+                    "places/ChIJXb0k11GpQjQRtAyPp2ySfJI/photos/AdDdOWrntO0i8qHHIxs2ZCNdvJBmBYSpWW3UhK0kJLouTusr91-Fn5zsR75NIytST4JyxSnnLw0RYeSSa-Clehi6TuE_acnMjzfREAFq_VWAO_9I6pmG1AcJZZkCzxOAy8cssKOtQA2qoawMSR5nDCFKm9nxZkT14OE6RdnL"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/restaurants/photos/{id}": {
+      "get": {
+        "summary": "Get photo",
+        "description": "Endpoint to get a photo from Google API given by the photo ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "The ID of a photo assigned by Google Places API"
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/comments/restaurant/{id}": {
+      "get": {
+        "summary": "Search comments of the same restaurant",
+        "description": "Endpoint to search comments based on the placeId",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "placeId",
+            "in": "path",
+            "description": "The placeId of restaurant",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/comments/user/{id}": {
+      "get": {
+        "summary": "Search comments of the same user",
+        "description": "Endpoint to search comments based on the userId",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "The userId of user",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/comments/": {
+      "post": {
+        "summary": "Create a new comment",
+        "description": "Create a new comment for a specific place by a user. The comment includes userId, placeId, content, and rating.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The details of the comment to be created.",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "placeId": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "content": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "rating": {
+                  "type": "string",
+                  "example": "number"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/comments/{id}": {
+      "put": {
+        "summary": "Update comment",
+        "description": "Update the comment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "The id of the comment"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "example": "any"
+                },
+                "placeId": {
+                  "example": "any"
+                },
+                "content": {
+                  "example": "any"
+                },
+                "rating": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete comment",
+        "description": "Delete the comment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "The id of the comment"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/comments/likes/{id}": {
+      "put": {
+        "summary": "Update likes",
+        "description": "Update the likes of comment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "The id of the comment"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "likes": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/articles/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "example": "any"
+                },
+                "placeId": {
+                  "example": "any"
+                },
+                "title": {
+                  "example": "any"
+                },
+                "content": {
+                  "example": "any"
+                },
+                "photo": {
+                  "example": "any"
+                },
+                "location": {
+                  "example": "any"
+                },
+                "price": {
+                  "example": "any"
+                },
+                "openHours": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/articles/{id}/like": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/articles/{id}/comments": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "example": "any"
+                },
+                "userId": {
+                  "example": "any"
+                },
+                "user": {
+                  "example": "any"
+                },
+                "userPhoto": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/articles/{articleId}/comments/{commentId}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "articleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/articles/{articleId}/comments/{commentId}/like": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "articleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/articles/{articleId}/comments/{commentId}/replies": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "articleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "example": "any"
+                },
+                "userId": {
+                  "example": "any"
+                },
+                "user": {
+                  "example": "any"
+                },
+                "userPhoto": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/articles/{articleId}/comments/{commentId}/replies/{replyId}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "articleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "replyId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/articles/{articleId}/comments/{commentId}/replies/{replyId}/like": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "articleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "replyId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/user/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/user/update/{id}": {
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/user/favorites/{id}": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "placeId": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/user/favorites/delete/{id}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "placeId": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/auth/user/login/google": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "credential": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/auth/user/logout": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/menu/": {
+      "post": {
+        "summary": "新增菜單",
+        "description": "新增一筆菜單資料，包含圖片上傳功能",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "parameters": [
+          {
+            "name": "image",
+            "in": "formData",
+            "description": "上傳圖片 (jpeg, jpg, png, gif)",
+            "required": false,
+            "type": "file"
+          },
+          {
+            "name": "name",
+            "in": "formData",
+            "description": "菜單名稱",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "price",
+            "in": "formData",
+            "description": "價格",
+            "required": true,
+            "type": "number"
+          },
+          {
+            "name": "category",
+            "in": "formData",
+            "description": "分類 (飲料、主食、甜點、湯品)",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "storeId",
+            "in": "formData",
+            "description": "餐廳 ID",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "example": "any"
+                },
+                "price": {
+                  "example": "any"
+                },
+                "category": {
+                  "example": "any"
+                },
+                "storeId": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "新增成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "1234567890"
+                },
+                "name": {
+                  "type": "string",
+                  "example": "牛肉湯"
+                },
+                "price": {
+                  "type": "number",
+                  "example": 200
+                },
+                "category": {
+                  "type": "string",
+                  "example": "湯品"
+                },
+                "storeId": {
+                  "type": "string",
+                  "example": "67720e635123faace157e5b3"
+                },
+                "imageUrl": {
+                  "type": "string",
+                  "example": "https://storage.googleapis.com/test-bucket/image1.jpg"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "get": {
+        "summary": "查詢所有菜單",
+        "description": "支援名稱、分類、價格篩選與分頁功能。",
+        "parameters": [
+          {
+            "name": "minPrice",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "maxPrice",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "根據名稱模糊搜尋",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "description": "根據分類篩選",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "分頁：第幾頁",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查詢成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "totalCount": {
+                  "type": "number",
+                  "example": 100
+                },
+                "totalPages": {
+                  "type": "number",
+                  "example": 10
+                },
+                "currentPage": {
+                  "type": "number",
+                  "example": 1
+                },
+                "menus": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "example": "1234567890"
+                      },
+                      "name": {
+                        "type": "string",
+                        "example": "牛肉湯"
+                      },
+                      "price": {
+                        "type": "number",
+                        "example": 200
+                      },
+                      "category": {
+                        "type": "string",
+                        "example": "湯品"
+                      },
+                      "storeId": {
+                        "type": "string",
+                        "example": "67720e635123faace157e5b3"
+                      },
+                      "imageUrl": {
+                        "type": "string",
+                        "example": "https://storage.googleapis.com/test-bucket/image1.jpg"
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/menu/{id}": {
+      "put": {
+        "summary": "更新菜單",
+        "description": "更新指定菜單資料，包含圖片上傳功能",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "菜單 ID"
+          },
+          {
+            "name": "image",
+            "in": "formData",
+            "description": "上傳圖片 (jpeg, jpg, png, gif)",
+            "required": false,
+            "type": "file"
+          },
+          {
+            "name": "name",
+            "in": "formData",
+            "description": "菜單名稱",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "price",
+            "in": "formData",
+            "description": "價格",
+            "required": false,
+            "type": "number"
+          },
+          {
+            "name": "category",
+            "in": "formData",
+            "description": "分類 (飲料、主食、甜點、湯品)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "example": "any"
+                },
+                "price": {
+                  "example": "any"
+                },
+                "category": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "1234567890"
+                },
+                "name": {
+                  "type": "string",
+                  "example": "牛肉湯"
+                },
+                "price": {
+                  "type": "number",
+                  "example": 250
+                },
+                "category": {
+                  "type": "string",
+                  "example": "湯品"
+                },
+                "storeId": {
+                  "type": "string",
+                  "example": "67720e635123faace157e5b3"
+                },
+                "imageUrl": {
+                  "type": "string",
+                  "example": "https://storage.googleapis.com/test-bucket/image1.jpg"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "刪除菜單",
+        "description": "刪除指定的菜單",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "菜單 ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    }
+  }
+}

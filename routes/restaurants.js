@@ -1,10 +1,66 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
+const controller = require("../controllers/restaurantsController");
 
-const app = express();
+//根據關鍵字和經緯度搜尋結果
+router.get(
+  "/search",
+  controller.searchByKeywordAndLocation,
+  /* 	
+    #swagger.summary = 'Search restaurants for the keyword'
+    #swagger.description = 'Endpoint to search 15 restaurants from Google API based on the keyword and the coordinate'
+    */
 
-router.get("/details", async (req, res, next) => {
+  /* 
+    #swagger.parameters['keyword'] = {
+      in: 'query',
+      description: 'The keyword to be searched by user',
+      required: 'true',
+      type: 'string',
+    }
+    #swagger.parameters['lat'] = {
+      in: 'query',
+      description: 'The latitude to be searched by user',
+      required: 'true',
+      type: 'string',
+    }
+    #swagger.parameters['lng'] = {
+      in: 'query',
+      description: 'The longitude to be searched by user',
+      required: 'true',
+      type: 'string',
+    }
+  */
+);
+
+router.get(
+  "/staticmap",
+  controller.getStaticmap,
+  /* 	
+    #swagger.summary = 'Get staticmap image'
+    #swagger.description = 'Endpoint to get staticmap image from Google API given by the location'
+  */
+
+  /* 
+    #swagger.parameters['lat'] = {
+      in: 'query',
+      description: 'The latitude to be searched by user',
+      required: 'true',
+      type: 'string',
+    }
+    #swagger.parameters['lng'] = {
+      in: 'query',
+      description: 'The longitude to be searched by user',
+      required: 'true',
+      type: 'string',
+    }
+  */
+);
+
+router.get(
+  "/:id",
+  controller.detailOfRestaurant,
   /* 	
     #swagger.summary = 'Get place detail information'
     #swagger.description = 'Endpoint to get detail information of a place from Google API'
@@ -12,7 +68,7 @@ router.get("/details", async (req, res, next) => {
 
   /* 
     #swagger.parameters['id'] = {
-      in: 'query',
+      in: 'path',
       description: 'The ID of a place assigned by Google Places API',
       required: 'true',
       type: 'string',
@@ -49,70 +105,12 @@ router.get("/details", async (req, res, next) => {
       description: "Get place detail successfully."
     }
   */
-
-  // get query parameter
-  // TODO: error handling
-  const id = req.query.id;
-
-  // send request to Google API
-  try {
-    const response = await axios.get(
-      `https://places.googleapis.com/v1/places/${id}`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        params: {
-          fields: [
-            "displayName",
-            "photos",
-            "formattedAddress",
-            "googleMapsUri",
-            "currentOpeningHours",
-            "nationalPhoneNumber",
-            "priceRange",
-            "rating",
-            "websiteUri",
-            "userRatingCount",
-          ].join(","),
-          key: process.env.API_KEY,
-          languageCode: "zh-TW",
-        },
-      }
-    );
-
-    const photoNum = 2;
-    const photoNames = [];
-    for (let i = 0; i < photoNum; i++) {
-      photoNames.push(response.data.photos[i].name);
-    }
-
-    // prepare data
-    const data = {
-      displayName: response.data.displayName.text ?? null,
-      rating: response.data.rating ?? null,
-      userRatingCount: response.data.userRatingCount ?? null,
-      startPrice: response.data.priceRange?.startPrice?.units ?? null,
-      endPrice: response.data.priceRange?.endPrice?.units ?? null,
-      weekDayDescriptions:
-        response.data.currentOpeningHours?.weekdayDescriptions ?? null,
-      formattedAddress: response.data.formattedAddress ?? null,
-      websiteUri: response.data.websiteUri ?? null,
-      nationalPhoneNumber: response.data.nationalPhoneNumber ?? null,
-      googleMapsUri: response.data.googleMapsUri,
-      openNow: response.data.currentOpeningHours?.openNow ?? null,
-      photoIds: photoNames,
-    };
-
-    res.json(data);
-  } catch (err) {
-    console.log(err);
-    res.status(404).json({});
-  }
-});
+);
 
 //店家照片
-router.get("/photo", async (req, res, next) => {
+router.get(
+  "/photos/:id",
+  controller.restaurantPhoto,
   /* 	
     #swagger.summary = 'Get photo'
     #swagger.description = 'Endpoint to get a photo from Google API given by the photo ID'
@@ -120,131 +118,12 @@ router.get("/photo", async (req, res, next) => {
 
   /* 
     #swagger.parameters['id'] = {
-      in: 'query',
+      in: 'path',
       description: 'The ID of a photo assigned by Google Places API',
       required: 'true',
       type: 'string',
     }
   */
-
-  // get query parameter
-  const photoId = req.query.id;
-
-  // send request to Google API
-  try {
-    const response = await axios.get(
-      `https://places.googleapis.com/v1/${photoId}/media`,
-      {
-        responseType: "arraybuffer",
-        params: {
-          key: process.env.API_KEY,
-          maxHeightPx: 1024,
-          maxWidthPx: 1024,
-        },
-      }
-    );
-
-    // prepare data
-    //FIXME
-    res.header("Access-Control-Allow-Origin", "*");
-    res.contentType(response.headers["content-type"]).send(response.data);
-  } catch (err) {
-    // TODO: error handling
-    console.log(err);
-    res.status(404).json({});
-  }
-});
-
-//根據關鍵字和經緯度搜尋結果
-router.get("/search", async (req, res, next) => {
-  /* 	
-    #swagger.summary = 'Search restaurants for the keyword'
-    #swagger.description = 'Endpoint to search 15 restaurants from Google API based on the keyword and the coordinate'
-    */
-
-  /* 
-    #swagger.parameters['keyword'] = {
-      in: 'query',
-      description: 'The keyword to be searched by user',
-      required: 'true',
-      type: 'string',
-    }
-    #swagger.parameters['lat'] = {
-      in: 'query',
-      description: 'The latitude to be searched by user',
-      required: 'true',
-      type: 'string',
-    }
-    #swagger.parameters['lng'] = {
-      in: 'query',
-      description: 'The longitude to be searched by user',
-      required: 'true',
-      type: 'string',
-    }
-  */
-
-  // get query parameter
-  const { keyword, lat, lng } = req.query;
-  // send request to Google API
-  try {
-    const body = {
-      textQuery: keyword,
-      includedType: "restaurant",
-      languageCode: "zh-TW",
-      pageSize: 15,
-      locationBias: {
-        circle: {
-          center: {
-            latitude: lat,
-            longitude: lng,
-          },
-          radius: 1000.0,
-        },
-      },
-    };
-    const headers = {
-      "X-Goog-Api-Key": process.env.API_KEY,
-      "X-Goog-FieldMask": [
-        "places.id",
-        "places.displayName",
-        "places.formattedAddress",
-        "places.photos",
-        "places.priceRange",
-        "places.rating",
-        "places.userRatingCount",
-        "places.currentOpeningHours",
-        "places.location",
-      ].join(","),
-    };
-    const response = await axios.post(
-      "https://places.googleapis.com/v1/places:searchText",
-      body,
-      {
-        headers,
-      }
-    );
-
-    const places = [];
-    for (const ele of response.data.places) {
-      places.push({
-        id: ele.id,
-        name: ele.displayName.text,
-        rating: ele.rating ?? null,
-        userRatingCount: ele.userRatingCount ?? null,
-        openNow: ele.currentOpeningHours?.openNow ?? null,
-        address: ele.formattedAddress ?? null,
-        startPrice: ele.priceRange?.startPrice?.units ?? null,
-        endPrice: ele.priceRange?.endPrice?.units ?? null,
-        photoId: ele.photos.length > 0 ? ele.photos[0].name : null,
-        lat: ele.location.latitude,
-        lng: ele.location.longitude,
-      });
-    }
-    res.json(places);
-  } catch (err) {
-    console.log(err);
-    res.status(404).json([]);
-  }
-});
+);
 
 module.exports = router;
