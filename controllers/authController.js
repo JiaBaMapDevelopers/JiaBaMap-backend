@@ -31,7 +31,7 @@ const googleLogin = async (req, res, _next) => {
   try {
     payload = await parseGoogleIdToken(token);
   } catch (err) {
-    console.log(`Failed to get the payload from the token: ${error}`);
+    console.log(`Failed to get the payload from the token: ${err}`);
     res.status(401).send();
     return;
   }

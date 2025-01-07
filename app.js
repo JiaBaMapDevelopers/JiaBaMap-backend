@@ -36,18 +36,43 @@ mongoose.connection.once("open", () => {
 
 const app = express();
 
+// 全局 CORS 中間件
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://jiaba-map.netlify.app');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  // 移除可能影響 Google 登入的 headers
+  res.removeHeader('Cross-Origin-Opener-Policy');
+  res.removeHeader('Cross-Origin-Embedder-Policy');
+  res.removeHeader('Cross-Origin-Resource-Policy');
+  
+  // 處理 OPTIONS 請求
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  next();
+});
+
+// CORS 配置
 app.use(cors({
-     origin: process.env.FRONTEND_URL,
-     credentials: true,
-     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-     allowedHeaders: ['Content-Type', 'Authorization']
-   }));
+  origin: 'https://jiaba-map.netlify.app',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
+}));
+
+// 基本中間件
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+// 路由
 app.use("/restaurants", restaurantsRouter);
 app.use("/comments", commentsRouter);
 app.use("/articles", articlelistRouter);
@@ -59,6 +84,13 @@ app.use("/store", storeRouter);
 app.use("/order", orderRouter);
 app.use("/payments/linepay", linepayRouter);
 app.use("/cart", cartRouter);
-// app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// 錯誤處理
+app.use((err, _req, res, _next) => {
+  console.error('Error:', err);
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal Server Error'
+  });
+});
 
 module.exports = app;
