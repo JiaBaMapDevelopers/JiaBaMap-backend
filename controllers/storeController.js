@@ -37,6 +37,19 @@ const createStore = async (req, res) => {
     res.status(500).json({ message: "餐廳新增失敗，請稍後再試" });
   }
 };
+
+const getStore = async (req, res) => {
+  const getStore = await Store.find()
+  res.status(200).json(getStore)
+}
+
+const getStoreByPlace = async (req, res) => {
+  const { placeId }  = req.params
+  const getStore = await Store.find({placeId: placeId})
+  res.status(200).json(getStore)
+}
 module.exports = {
   createStore,
+  getStore,
+  getStoreByPlace,
 };
