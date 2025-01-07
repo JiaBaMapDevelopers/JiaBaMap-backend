@@ -8,8 +8,12 @@ const orderSchema = new mongoose.Schema({
     required: true,
   },
   storeId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     ref: "Store",
+    required: true,
+  },
+  storeName: {
+    type: String,
     required: true,
   },
   orderTime: {
