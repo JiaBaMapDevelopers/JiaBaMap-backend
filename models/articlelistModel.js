@@ -83,7 +83,8 @@ const articleSchema = new mongoose.Schema({
     required: true
   },
   photo: {
-    type: String,
+    type: [String],
+    default: [],
     required: true
   },
   createdAt: {

@@ -19,6 +19,7 @@ const menuRouter = require("./routes/menu");
 const storeRouter = require("./routes/store");
 const orderRouter = require("./routes/order");
 const linepayRouter = require("./routes/linepay");
+const cartRouter = require("./routes/cart");
 
 require("dotenv").config();
 // console.log('GOOGLE_APPLICATION_CREDENTIALS:', process.env.GOOGLE_APPLICATION_CREDENTIALS);
@@ -80,9 +81,7 @@ app.use('/uploads', express.static('uploads'));
 app.use("/store", storeRouter);
 app.use("/order", orderRouter);
 app.use("/payments/linepay", linepayRouter);
+app.use("/cart", cartRouter);
 // app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.get("/test", (req, res) => {
-  res.json({ message: "Hello World!" });
-})
 
 module.exports = app;

@@ -1,4 +1,6 @@
 const Article = require('../models/articlelistModel');
+const { uploadPhotos } = require("../utils");
+const { Storage } = require("@google-cloud/storage");
 
 exports.getAllArticles = async (req, res) => {
   try {
@@ -44,7 +46,23 @@ exports.createArticle = async (req, res) => {
         message: "UserId, placeId, title, eatdate and content are required" 
       });
     }
-    
+    async function uploadPhotos(files) {
+      //TODO upload photos to GCS
+      const storage = new Storage({
+        projectId: process.env.GOOGLE_PROJECT_ID,
+      });
+      const photoUrls = [];
+      for (const file of files) {
+        const bucketName = process.env.BUCKET_NAME;
+        const fileName = encodeURIComponent(file.originalname);
+        const objectName = `article/${fileName}`;
+        await storage.bucket(bucketName).file(objectName).save(file.buffer);
+        const url = `${process.env.GOOGLE_CLOUD_STORAGE_BASE_URL}${bucketName}/${objectName}`;
+        photoUrls.push(url);
+      }
+      return photoUrls;
+    }
+    const photoUrls = await uploadPhotos(req.files);
     const article = new Article({
       userId,
       placeId,
@@ -53,7 +71,7 @@ exports.createArticle = async (req, res) => {
       user,
       userPhoto,
       restaurantName,
-      photo: photo || '',  // 設置默認值
+      photo: photoUrls || '',  // 設置默認值
       eatdateAt: new Date(eatdate),
       status: 'published'
     });
