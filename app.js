@@ -4,7 +4,12 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const http = require("http");
 
+require("dotenv").config();
+
+
+const notificationRouter = require("./routes/notification");
 const restaurantsRouter = require("./routes/restaurants");
 const commentsRouter = require("./routes/comments");
 const articlelistRouter = require("./routes/articlelist");
@@ -35,7 +40,29 @@ mongoose.connection.once("open", () => {
 });
 
 const app = express();
+const server = http.createServer(app);
 
+const { initializeSocket } = require("./socketConfig");
+initializeSocket(server);
+
+const port =5001;
+server.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+}).on('error', (err) => {
+  console.error('Error starting server:', err);
+});
+
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  methods: ["GET", "POST", "PATCH", "DELETE"],
+  credentials: true
+}));
+
+
+// app.use(cors({
+//   origin: process.env.FRONTEND_URL,
+//   credentials: true
+// }));
 app.use(cors());
 app.use(logger("dev"));
 app.use(express.json());
@@ -48,6 +75,7 @@ app.use("/comments", commentsRouter);
 app.use("/articles", articlelistRouter);
 app.use("/user", userRouter);
 app.use("/auth", authRouter);
+app.use("/notification", notificationRouter);
 app.use("/menu", menuRouter); 
 app.use('/uploads', express.static('uploads'));
 app.use("/store", storeRouter);

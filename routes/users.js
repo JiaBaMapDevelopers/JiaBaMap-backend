@@ -24,4 +24,8 @@ router.post("/favorites/:id", controller.addFavorites)
 
 router.delete("/favorites/delete/:id", controller.delFavorites)
 
+router.get("/test", (req, res) => {
+  res.json({ message: "test" });
+});
+
 module.exports = router;

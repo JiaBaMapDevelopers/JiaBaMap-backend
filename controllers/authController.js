@@ -53,6 +53,8 @@ const googleLogin = async (req, res, _next) => {
 
   const accessToken = generateToken({
     id: user._id,
+    // name: user.name,
+    // profilePicture: user.profilePicture,
   });
 
   res.json({
