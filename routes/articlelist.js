@@ -2,7 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const router = express.Router();
 const articleController = require("../controllers/articlelistController");
-const notificationMiddleWare = require("../middlewares/notificationMiddleWare");
+const notificationMiddleWare = require("../controllers/middlewares/notificationMiddleWare");
 
 const storage = multer.memoryStorage();
 const upload = multer({
