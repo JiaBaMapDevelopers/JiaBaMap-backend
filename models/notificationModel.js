@@ -1,24 +1,34 @@
+// models/notificationModel.js
+
 const mongoose = require("mongoose");
 
 const notificationSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
-  storeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Store' },
-  commentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Comment' },
-  userImg: { type: String },
-  userName: { type: String },
-  storeName: { type: String },
-  actionType: { 
-    type: String, 
+  userId: { type: String, required: true },           // 接收通知的用戶
+  targetUserId: { type: String, required: true },     // 觸發通知的用戶
+  actionType: {                                       // 動作類型
+    type: String,
     required: true,
     enum: ['comment', 'like', 'reply']
   },
-  contentType: {
+  relatedType: {                                      // 關聯類型
     type: String,
-    enum: ['article', 'comment', 'reply']
+    required: true,
+    enum: [
+      'restaurant_comment',
+      'restaurant_comment_like',
+      'article_comment',
+      'article_like',
+      'article_comment_like',
+      'article_comment_reply'
+    ]
   },
+  relatedId: { type: String },                        // 關聯的內容ID
   read: { type: Boolean, default: false },
   timestamp: { type: Date, default: Date.now },
-  expiresAt: { type: Date, default: () => new Date(+new Date() + 30*24*60*60*1000) },
+  expiresAt: { 
+    type: Date, 
+    default: () => new Date(+new Date() + 30*24*60*60*1000) 
+  },
   metadata: {
     articleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Article' },
     replyId: { type: mongoose.Schema.Types.ObjectId },
@@ -31,7 +41,6 @@ const notificationSchema = new mongoose.Schema({
 notificationSchema.index({ userId: 1, read: 1, timestamp: -1 });
 notificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-// 添加靜態方法
 notificationSchema.statics.getUnreadCount = function(userId) {
   return this.countDocuments({ userId, read: false });
 };

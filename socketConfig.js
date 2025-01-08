@@ -1,34 +1,55 @@
 const { Server } = require('socket.io');
+const jwt = require('jsonwebtoken');
+
 let io;
 
 const initializeSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: process.env.FRONTEND_URL,
+      origin: process.env.FRONTEND_URL || "http://localhost:5173",
       methods: ["GET", "POST"],
       credentials: true
+    },
+    path: '/socket.io'  // 確保路徑正確
+  });
+
+  // 中介層：驗證 token
+  io.use((socket, next) => {
+    try {
+      const token = socket.handshake.auth.token;
+      if (!token) {
+        return next(new Error('Authentication token not provided'));
+      }
+
+      // 驗證 token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      socket.userId = decoded.id;
+      next();
+    } catch (error) {
+      console.error('Socket authentication error:', error);
+      next(new Error('Authentication failed'));
     }
   });
 
   io.on('connection', (socket) => {
-    console.log("A user connected");
-    
+    console.log('New client connected:', socket.id);
+
+    // 加入用戶專屬房間
     socket.on('join', (userId) => {
-      if (!userId) {
-        console.log("Received null/undefined userId");
-        return;
-      }
-      try {
-        const roomId = userId.toString();
-        console.log(`User ${roomId} joined room`);
-        socket.join(roomId);
-      } catch (error) {
-        console.error("Error joining room:", error);
+      if (userId) {
+        socket.join(userId.toString());
+        console.log(`User ${userId} joined their room`);
       }
     });
 
-    socket.on("disconnect", () => {
-      console.log("A user disconnected");
+    // 監聽斷開連接事件
+    socket.on('disconnect', () => {
+      console.log('Client disconnected:', socket.id);
+    });
+
+    // 錯誤處理
+    socket.on('error', (error) => {
+      console.error('Socket error:', error);
     });
   });
 
@@ -42,4 +63,7 @@ const getIO = () => {
   return io;
 };
 
-module.exports = { initializeSocket, getIO };
+module.exports = {
+  initializeSocket,
+  getIO
+};

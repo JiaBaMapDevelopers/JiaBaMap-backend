@@ -45,7 +45,7 @@ const server = http.createServer(app);
 const { initializeSocket } = require("./socketConfig");
 initializeSocket(server);
 
-const port =5001;
+const port = 3002;
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 }).on('error', (err) => {
@@ -54,7 +54,7 @@ server.listen(port, () => {
 
 app.use(cors({
   origin: process.env.FRONTEND_URL || "http://localhost:5173",
-  methods: ["GET", "POST", "PATCH", "DELETE"],
+  methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
   credentials: true
 }));
 

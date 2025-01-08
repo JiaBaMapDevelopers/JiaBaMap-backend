@@ -3,6 +3,16 @@ const Store = require("../models/storeModel");
 const jwt = require("jsonwebtoken");
 const { parseGoogleIdToken, generateToken } = require("../utils");
 const bcrypt = require("bcryptjs");
+const NotificationSetting = require("../models/notificationSettingModel");
+
+const ensureNotificationSettings = async (userId) => {
+  try {
+    await NotificationSetting.createDefaultSettings(userId);
+  } catch (error) {
+    console.error('Error ensuring notification settings:', error);
+    // 不拋出錯誤，因為這不應該影響登錄流程
+  }
+};
 
 const verifyToken = (req, res, next) => {
   const authorizationHeader = req.headers.authorization;
@@ -32,6 +42,7 @@ const googleLogin = async (req, res, _next) => {
   let payload;
   try {
     payload = await parseGoogleIdToken(token);
+    await ensureNotificationSettings(user._id);
   } catch (err) {
     console.log(`Failed to get the payload from the token: ${error}`);
     res.status(401).send();
