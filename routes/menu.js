@@ -1,7 +1,7 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const menuController = require('../controllers/menuController'); // 引入 Controller
-const multer = require('multer');
+const menuController = require("../controllers/menuController"); // 引入 Controller
+const multer = require("multer");
 
 // 設定 Multer 接收圖片檔案 (記憶體儲存)
 const upload = multer({ storage: multer.memoryStorage() });
@@ -9,7 +9,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 // 新增菜單
 router.post(
   "/",
-  upload.single('image'), // 接收單張圖片上傳
+  upload.single("image"), // 接收單張圖片上傳
   menuController.createMenu,
   /* 
     #swagger.summary = '新增菜單'
@@ -125,11 +125,10 @@ router.get(
   */
 );
 
-
 // 更新菜單
 router.put(
   "/:id",
-  upload.single('image'), // 接收單張圖片上傳
+  upload.single("image"), // 接收單張圖片上傳
   menuController.updateMenu,
   /* 
     #swagger.summary = '更新菜單'
@@ -190,7 +189,6 @@ router.put(
     }
   */
 );
-
 
 // 刪除菜單
 router.delete(

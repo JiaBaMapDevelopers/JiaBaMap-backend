@@ -3,7 +3,7 @@ const OrderDetail = require("../models/orderDetailModel");
 const Order = require("../models/orderModel");
 const Menu = require("../models/menuModel");
 
-mongoose.connect("mongodb://localhost:27017/tests");
+mongoose.connect("mongodb://localhost:27017/test");
 
 const seedOrderDetails = async () => {
   // 取得訂單資料

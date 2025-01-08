@@ -6,15 +6,21 @@ const orderDetailSchema = new mongoose.Schema({
     ref: "Order",
     required: true,
   },
-  productId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Menu",
-    required: true,
-  },
-  quantity: {
+  items: [
+    {
+      productId: { type: String, required: true },
+      productName: { type: String, required: true },
+      price: { type: Number, required: true },
+      quantity: { type: Number, required: true },
+    },
+  ],
+  totalAmount: {
     type: Number,
     required: true,
-    min: 1,
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
   },
   note: String,
   spec: String,

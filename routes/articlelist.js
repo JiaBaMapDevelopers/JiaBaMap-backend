@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require("express");
 const multer = require("multer");
 const router = express.Router();
 const articleController = require('../controllers/articlelistController');
@@ -64,13 +64,13 @@ const createNotificationMiddleware = (type) => async (req, res, next) => {
 };
 
 // 獲取所有文章
-router.get('/', articleController.getAllArticles);
+router.get("/", articleController.getAllArticles);
 
 // 創建新文章
-router.post('/',upload.array("photo"), articleController.createArticle);
+router.post("/", upload.array("photo"), articleController.createArticle);
 
 // 刪除食記
-router.delete('/:id', articleController.deleteArticle);
+router.delete("/:id", articleController.deleteArticle);
 
 // 文章按讚/取消按讚
 router.post('/:id/like', articleController.toggleLike, createNotificationMiddleware('article_like'));
@@ -79,7 +79,10 @@ router.post('/:id/like', articleController.toggleLike, createNotificationMiddlew
 router.post('/:id/comments', articleController.addComment, createNotificationMiddleware('article_comment'));
 
 // 刪除評論
-router.delete('/:articleId/comments/:commentId', articleController.deleteComment);
+router.delete(
+  "/:articleId/comments/:commentId",
+  articleController.deleteComment,
+);
 
 // 評論按讚/取消按讚
 router.post('/:articleId/comments/:commentId/like', articleController.toggleCommentLike, createNotificationMiddleware('article_comment_like'));
@@ -88,17 +91,20 @@ router.post('/:articleId/comments/:commentId/like', articleController.toggleComm
 router.post('/:articleId/comments/:commentId/replies', articleController.addReply, createNotificationMiddleware('article_reply'));
 
 // 刪除回覆
-router.delete('/:articleId/comments/:commentId/replies/:replyId', articleController.deleteReply);
+router.delete(
+  "/:articleId/comments/:commentId/replies/:replyId",
+  articleController.deleteReply,
+);
 
 // 回覆按讚/取消按讚
 router.post('/:articleId/comments/:commentId/replies/:replyId/like', articleController.toggleReplyLike);
 
-router.get('/published/:userId', articleController.getPublishedArticles);
+router.get("/published/:userId", articleController.getPublishedArticles);
 
 // 獲取單篇食記
-router.get('/:id', articleController.getArticleById);
+router.get("/:id", articleController.getArticleById);
 
 // 修改已發布食記
-router.patch('/:id', articleController.updateArticle);
+router.patch("/:id", articleController.updateArticle);
 
 module.exports = router;

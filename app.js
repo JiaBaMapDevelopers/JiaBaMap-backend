@@ -8,14 +8,13 @@ const http = require("http");
 
 require("dotenv").config();
 
-
 const notificationRouter = require("./routes/notification");
 const restaurantsRouter = require("./routes/restaurants");
 const commentsRouter = require("./routes/comments");
 const articlelistRouter = require("./routes/articlelist");
 const userRouter = require("./routes/users");
 const authRouter = require("./routes/auth");
-const menuRouter = require("./routes/menu"); 
+const menuRouter = require("./routes/menu");
 const storeRouter = require("./routes/store");
 const orderRouter = require("./routes/order");
 const linepayRouter = require("./routes/linepay");
@@ -58,6 +57,13 @@ app.use(cors({
   credentials: true
 }));
 
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    methods: ["GET", "PUT", "POST", "PATCH", "DELETE"],
+    credentials: true,
+  }),
+);
 
 // app.use(cors({
 //   origin: process.env.FRONTEND_URL,
@@ -76,8 +82,8 @@ app.use("/articles", articlelistRouter);
 app.use("/user", userRouter);
 app.use("/auth", authRouter);
 app.use("/notification", notificationRouter);
-app.use("/menu", menuRouter); 
-app.use('/uploads', express.static('uploads'));
+app.use("/menu", menuRouter);
+app.use("/uploads", express.static("uploads"));
 app.use("/store", storeRouter);
 app.use("/order", orderRouter);
 app.use("/payments/linepay", linepayRouter);
