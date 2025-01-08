@@ -40,10 +40,11 @@ const Confirm = async (req, res) => {
       baseUrl: LINE_PAY_API_URL,
       apiPath: `/v3/payments/${transactionId}/confirm`,
       data: {
-        amount: 150, //去資料庫中撈出該筆 order_id 的資料，並且將 amount 填進去
+        amount: 940, //去資料庫中撈出該筆 order_id 的資料，並且將 amount 填進去
         currency: "TWD",
       },
     });
+    console.log(response);
     if (response?.returnCode === "0000") {
       const redirectUrl = `${FRONTEND_URL}/checkout-detail?transactionId=${transactionId}&status=success`;
       res.redirect(redirectUrl);
