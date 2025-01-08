@@ -27,7 +27,7 @@ const searchByKeywordAndLocation = async (req, res, _next) => {
       },
     };
     const headers = {
-      "X-Goog-Api-Key": process.env.API_KEY,
+      "X-Goog-Api-Key":process.env.API_KEY,
       "X-Goog-FieldMask": [
         "places.id",
         "places.displayName",

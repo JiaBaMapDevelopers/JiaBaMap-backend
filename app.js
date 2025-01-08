@@ -9,7 +9,7 @@ const http = require("http");
 require("dotenv").config();
 
 
-const notificationRouter = require("./routes/notification");
+
 const restaurantsRouter = require("./routes/restaurants");
 const commentsRouter = require("./routes/comments");
 const articlelistRouter = require("./routes/articlelist");
@@ -42,25 +42,53 @@ mongoose.connection.once("open", () => {
 const app = express();
 const server = http.createServer(app);
 
-// 全局 CORS 配置 - 放在最前面
-app.use((req, res, next) => {
-  // 設置 CORS headers
-  res.header('Access-Control-Allow-Origin', 'https://jiaba-map.netlify.app');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  
-  // 處理 OPTIONS 請求
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  
-  next();
-});
+// 定義允許的來源
+const allowedOrigins = [
+  'https://jiabamap.up.railway.app',    // Railway 部署的前端
+  'http://localhost:3000',              // 本地開發環境
+  'https://accounts.google.com'
+];
+
+// 統一的 CORS 設定
+const corsOptions = {
+  origin: function(origin, callback) {
+    // 允許沒有 origin 的請求（如移動應用）
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With',
+    'Cross-Origin-Opener-Policy',
+    'Cross-Origin-Embedder-Policy',
+    'Cross-Origin-Resource-Policy'
+  ],
+  exposedHeaders: ['Set-Cookie'],
+  preflightContinue: false,
+  optionsSuccessStatus: 200
+};
+
+// 應用 CORS 設定 - 確保這是第一個中間件
+app.use(cors(corsOptions));
 
 // 基本中間件
 const { initializeSocket } = require("./socketConfig");
 initializeSocket(server);
+
+const port = process.env.port || 3000;
+server
+  .listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  })
+  .on("error", (err) => {
+    console.error("Error starting server:", err);
+  });
 
 app.use(logger("dev"));
 app.use(express.json());
@@ -82,7 +110,7 @@ app.use("/order", orderRouter);
 app.use("/payments/linepay", linepayRouter);
 app.use("/cart", cartRouter);
 
-// 全局錯誤處理中�件
+// 全局錯誤處理中間件
 app.use((err, req, res, next) => {
   console.error('Error details:', {
     message: err.message,
@@ -90,12 +118,6 @@ app.use((err, req, res, next) => {
     path: req.path,
     method: req.method
   });
-
-  // 確保在錯誤響應中也設置 CORS headers
-  res.header('Access-Control-Allow-Origin', 'https://jiaba-map.netlify.app');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
 
   res.status(err.status || 500).json({
     error: err.message || 'Internal Server Error',
@@ -106,11 +128,6 @@ app.use((err, req, res, next) => {
 
 // 404 處理
 app.use((req, res) => {
-  res.header('Access-Control-Allow-Origin', 'https://jiaba-map.netlify.app');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  
   res.status(404).json({
     error: 'Not Found',
     path: req.path,
@@ -118,9 +135,7 @@ app.use((req, res) => {
   });
 });
 
-// const port = process.env.PORT || 5001;
-// server.listen(port, () => {
-//   console.log(`Server is running on port ${port}`);
-// });
+
+
 
 module.exports = app;

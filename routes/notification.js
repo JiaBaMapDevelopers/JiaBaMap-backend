@@ -10,4 +10,4 @@
 // router.patch('/read/:notificationId', NotificationController.markAsRead);
 // router.patch('/:userId/read-multiple', NotificationController.markMultipleAsRead);
 
-// module.exports = router;
+// module.exports = router

@@ -4,7 +4,7 @@ const { Storage } = require("@google-cloud/storage");
 
 exports.getAllArticles = async (req, res) => {
   try {
-    const userId = req.query.userId;  // 從查詢參數獲取用戶ID
+    const userId = req.query.userId;
     const articles = await Article.find().sort({ createdAt: -1 });
 
     // 如果有用戶ID，檢查每篇文章的按讚狀態
@@ -90,8 +90,6 @@ exports.createArticle = async (req, res) => {
   }
 };
 
-
-
 exports.deleteArticle = async (req, res) => {
   
     const { id } = req.params;
@@ -104,8 +102,6 @@ exports.deleteArticle = async (req, res) => {
     });
   
 };
-
-
 
 // 新增獲取已發布文章的控制器
 exports.getPublishedArticles = async (req, res) => {
@@ -126,8 +122,7 @@ exports.getPublishedArticles = async (req, res) => {
     }
   };
 
-
-  const handleLike = async (doc, userId) => {
+const handleLike = async (doc, userId) => {
     const isLiked = doc.likedBy.includes(userId);
     
     if (isLiked) {
@@ -166,9 +161,6 @@ exports.toggleLike = async (req, res) => {
 
     res.status(200).json(result);
 };
-
-
-
 
 exports.addComment = async (req, res) => {
   

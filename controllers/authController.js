@@ -5,7 +5,7 @@ const { parseGoogleIdToken, generateToken } = require("../utils");
 const bcrypt = require("bcryptjs");
 
 const verifyToken = (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://jiaba-map.netlify.app');
+  res.header('Access-Control-Allow-Origin', 'https://jiabamap.up.railway.app');
   res.header('Access-Control-Allow-Credentials', 'true');
   const authorizationHeader = req.headers.authorization;
   if (!authorizationHeader) {
@@ -28,7 +28,7 @@ const verifyToken = (req, res, next) => {
 const googleLogin = async (req, res, _next) => {
   res.header('Cross-Origin-Opener-Policy', 'unsafe-none');
   res.header('Cross-Origin-Embedder-Policy', 'unsafe-none');
-  res.header('Access-Control-Allow-Origin', 'https://jiaba-map.netlify.app');
+  res.header('Access-Control-Allow-Origin', 'https://jiabamap.up.railway.app');
   res.header('Access-Control-Allow-Credentials', 'true');
   const token = req.body.credential;
   let payload;
