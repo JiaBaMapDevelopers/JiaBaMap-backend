@@ -16,10 +16,19 @@ const orderSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  items: [
+    {
+        productId: { type: String, required: true },
+        productName: { type: String, required: true },
+        price: { type: Number, required: true },
+        quantity: { type: Number, required: true }
+    }
+],
   orderTime: {
     type: Date,
     default: Date.now,
   },
+  
   pickupTime: {
     type: Date,
   },

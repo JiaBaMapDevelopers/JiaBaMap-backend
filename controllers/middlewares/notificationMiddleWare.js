@@ -1,6 +1,6 @@
-const Comment = require("../models/commentsModel");
-const Article = require("../models/articlelistModel");
-const notificationController = require("../controllers/notificationController");
+const Comment = require("../../models/commentsModel");
+const Article = require("../../models/articlelistModel");
+const notificationController = require("../notificationController");
 
 // 新增評論後觸發通知
 const notifyOnCommentCreate = async (req, res, next) => {

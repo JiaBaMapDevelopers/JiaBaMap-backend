@@ -21,28 +21,61 @@ const createOrder = async (req, res) => {
   const { customerId, storeId, pickupTime, items, storeName } = req.body;
 
   const totalAmount = await calculateTotalAmount(items);
+  let order = await Order.findOne({ customerId, storeId, isDeleted: false });
 
-  const order = new Order({
-    customerId,
-    storeId,
-    pickupTime,
-    totalAmount,
-    storeName,
-  });
+  if (order) {
+    order.pickupTime = pickupTime || order.pickupTime;
+    order.storeName = storeName || order.storeName;
 
-  await order.save();
+    items.forEach((newItem) => {
+      const existingItem = order.items.find(
+        (item) => item.productId === newItem.productId,
+      );
+      if (existingItem) {
+        // 如果商品已存在，更新数量
+        existingItem.quantity += newItem.quantity;
+      } else {
+        // 如果商品不存在，添加到 items
+        order.items.push(newItem);
+      }
+    });
 
+    order.totalAmount = order.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0,
+    );
+
+    await order.save();
+
+    await OrderDetail.deleteMany({ orderId: order._id });
+  } else {
+    order = new Order({
+      customerId,
+      storeId,
+      pickupTime,
+      totalAmount,
+      storeName,
+      items,
+    });
+
+    await order.save();
+  }
+  const orderDetails = items.map((item) => ({
+    orderId: order._id,
+    items: order.items,
+    totalAmount: order.totalAmount,
+    note: item.note,
+    spec: item.spec,
+  }));
+  const savedOrder = await OrderDetail.insertMany(orderDetails);
   try {
-    const orderDetails = items.map((item) => ({
-      orderId: order._id,
-      productId: item.productId,
-      quantity: item.quantity,
-      note: item.note,
-      spec: item.spec,
-    }));
-
-    const savedOrder = await OrderDetail.insertMany(orderDetails);
-    res.status(201).json({ message: "成功建立訂單", savedOrder });
+    res
+      .status(201)
+      .json({
+        message: order.isNew ? "成功建立訂單" : "成功更新訂單",
+        order,
+        orderDetails: savedOrder,
+      });
   } catch (error) {
     res.status(500).json({ message: "建立訂單發生錯誤，請稍後再試" });
   }
