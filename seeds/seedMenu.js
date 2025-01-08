@@ -1,10 +1,7 @@
 const mongoose = require("mongoose");
 const Menu = require("../models/menuModel.js");
 
-mongoose.connect("mongodb://localhost:27017/tests", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose.connect("mongodb://localhost:27017/test");
 
 const seedMenus = async () => {
   try {

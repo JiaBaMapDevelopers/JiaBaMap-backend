@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const Store = require("./storeModel");
 
 const orderSchema = new mongoose.Schema({
   customerId: {
@@ -8,7 +7,7 @@ const orderSchema = new mongoose.Schema({
     required: true,
   },
   storeId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
     ref: "Store",
     required: true,
   },
@@ -18,17 +17,17 @@ const orderSchema = new mongoose.Schema({
   },
   items: [
     {
-        productId: { type: String, required: true },
-        productName: { type: String, required: true },
-        price: { type: Number, required: true },
-        quantity: { type: Number, required: true }
-    }
-],
+      productId: { type: String, required: true },
+      productName: { type: String, required: true },
+      price: { type: Number, required: true },
+      quantity: { type: Number, required: true },
+    },
+  ],
   orderTime: {
     type: Date,
     default: Date.now,
   },
-  
+
   pickupTime: {
     type: Date,
   },
