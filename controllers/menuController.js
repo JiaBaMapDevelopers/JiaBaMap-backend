@@ -1,5 +1,5 @@
 const Menu = require('../models/menuModel');
-const { uploadPhotos } = require('../utils');
+const { uploadMenuPhotos } = require('../utils');
 const multer = require('multer');
 const path = require('path');
 const mongoose = require('mongoose');
@@ -30,7 +30,7 @@ const upload = multer({
 
 // 新增菜單
 exports.createMenu = async (req, res) => {
-  try {
+  // try {
     // 資料驗證 - 檢查必填欄位
     const { name, description, price, category, storeId } = req.body;
 
@@ -69,10 +69,10 @@ exports.createMenu = async (req, res) => {
     // 儲存資料到資料庫
     const savedMenu = await menu.save();
     res.status(200).json(savedMenu);
-  } catch (error) {
-    console.error("新增失敗：", error);
-    res.status(500).json({ message: "新增失敗", error });
-  }
+  // } catch (error) {
+  //   console.error("新增失敗：", error);
+  //   res.status(500).json({ message: "新增失敗", error });
+  // }
 };
 
 // 查詢菜單 (支援名稱、分類、價格篩選與分頁)
