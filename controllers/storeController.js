@@ -25,7 +25,7 @@ const getStoreByPlace = async (req, res) => {
   console.log(placeId);
   
   const getStore = await Store.find({ placeId: placeId });
-  if(getStore){
+  if(getStore.length > 0){
     res.status(200).json();
   }else{
     res.status(202).json({ message: "未註冊餐廳" })
