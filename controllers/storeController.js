@@ -25,8 +25,23 @@ const getStoreByPlace = async (req, res) => {
   const getStore = await Store.find({ placeId: placeId });
   res.status(200).json(getStore);
 };
+
+const getStoreIdByName = async (req, res) => {
+  const { storeName } = req.params;
+  let store = await Store.findOne({ storeName: storeName });
+  if (!store) {
+    store = await Store.findOne().sort({ createdAt: -1 });
+  }
+  if (store) {
+    res.status(200).json({ _id: store._id });
+  } else {
+    res.status(404).json({ message: "未找到任何商店" });
+  }
+};
+
 module.exports = {
   createStore,
   getStore,
   getStoreByPlace,
+  getStoreIdByName,
 };
