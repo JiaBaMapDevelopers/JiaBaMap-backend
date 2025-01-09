@@ -1,4 +1,5 @@
 const { requestOnlineAPI } = require("../linepay_api_utils");
+const Order = require("../models/orderModel");
 require("dotenv").config();
 
 const LINE_PAY_API_URL = process.env.LINE_PAY_API_URL;
@@ -33,23 +34,25 @@ const Payment = async (req, res) => {
 //2. 付款授權
 const Confirm = async (req, res) => {
   const { transactionId, orderId } = req.query;
-  console.log("transactionId1: ", transactionId);
   try {
+    const order = await Order.findById(orderId);
+    const totalAmount = order.totalAmount;
+
     let response = await requestOnlineAPI({
       method: "POST",
       baseUrl: LINE_PAY_API_URL,
       apiPath: `/v3/payments/${transactionId}/confirm`,
       data: {
-        amount: 940, //去資料庫中撈出該筆 order_id 的資料，並且將 amount 填進去
+        amount: totalAmount,
         currency: "TWD",
       },
     });
     console.log(response);
     if (response?.returnCode === "0000") {
-      const redirectUrl = `${FRONTEND_URL}/checkout-detail?transactionId=${transactionId}&status=success`;
+      const redirectUrl = `${FRONTEND_URL}/checkout-detail?transactionId=${transactionId}&orderId=${orderId}&status=success`;
       res.redirect(redirectUrl);
     } else {
-      const redirectUrl = `${FRONTEND_URL}/checkout-detail?transactionId=${transactionId}&status=failed`;
+      const redirectUrl = `${FRONTEND_URL}/checkout-detail?transactionId=${transactionId}&orderId=${orderId}&status=failed`;
       res.redirect(redirectUrl);
     }
   } catch (error) {

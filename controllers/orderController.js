@@ -1,6 +1,8 @@
 const Order = require("../models/orderModel");
 const OrderDetail = require("../models/orderDetailModel");
+const Store = require("../models/storeModel");
 const Menu = require("../models/menuModel");
+const mongoose = require("mongoose");
 
 //計算總金額
 const calculateTotalAmount = async (items) => {
@@ -69,13 +71,11 @@ const createOrder = async (req, res) => {
   }));
   const savedOrder = await OrderDetail.insertMany(orderDetails);
   try {
-    res
-      .status(201)
-      .json({
-        message: order.isNew ? "成功建立訂單" : "成功更新訂單",
-        order,
-        orderDetails: savedOrder,
-      });
+    res.status(201).json({
+      message: order.isNew ? "成功建立訂單" : "成功更新訂單",
+      order,
+      orderDetails: savedOrder,
+    });
   } catch (error) {
     res.status(500).json({ message: "建立訂單發生錯誤，請稍後再試" });
   }
@@ -92,14 +92,15 @@ const getOrders = async (req, res) => {
   const orders = await Order.find(filter).populate("storeName").lean();
   try {
     if (!orders || orders.length === 0) {
-      return res.status(201).json({ message: "沒有找到訂單" });
+      return res.status(404).json({ message: "沒有找到訂單" });
     }
 
     const response = orders.map((order) => ({
       orderId: order._id,
-      restaurantName: order.storeId?.name || "未知餐廳",
+      restaurantName: order.storeName,
       customerId: order.customerId,
       totalAmount: order.totalAmount,
+      itemsLength: order.items.length,
       orderTime: order.orderTime,
       isPaid: order.isPaid,
     }));
@@ -114,40 +115,36 @@ const getOrders = async (req, res) => {
 const getOrderDetails = async (req, res) => {
   const { orderId } = req.params;
 
-  const order = await Order.findById(orderId)
-    .populate("storeId", "name phone address")
-    .lean();
-
+  // 查詢訂單
+  const order = await Order.findById(orderId);
   if (!order) {
-    return res.status(404).json({ message: "訂單不存在" });
+    return res.status(404).send("訂單未找到");
   }
-  if (!order.storeId) {
-    return res.status(404).json({ message: "餐廳資訊不存在" });
+  const storeId = order.storeId; // 從訂單中提取 storeId
+
+  // 查詢店家詳細資訊
+  const store = await Store.findById(storeId).select(
+    "storeName storeAddress storePhone",
+  );
+  if (!store) {
+    return res.status(404).send("店家未找到");
   }
 
   try {
-    const orderDetails = await OrderDetail.find({ orderId })
-      .populate("productId")
-      .lean();
+    const orderDetails = await OrderDetail.findOne({ orderId: orderId });
 
-    console.log("orderDetails: ", orderDetails);
     const response = {
+      storeName: store.storeName,
+      storeAddress: store.storeAddress,
+      storePhone: store.storePhone,
       orderId: order._id,
       restaurantName: order.storeId.name,
+      customerId: order.customerId,
       phone: order.storeId.phone,
       address: order.storeId.address,
-      customerId: order.customerId,
       totalAmount: order.totalAmount,
-      pickupTime: order.pickupTime,
-      orderTime: order.orderTime,
-      isPaid: order.isPaid,
-      items: orderDetails.map((detail) => ({
-        productId: detail.productId?._id || "測試飲料id",
-        productName: detail.productId?.name || "測試飲料",
-        quantity: detail.quantity,
-        price: detail.productId?.price || 0,
-        spec: detail.productId?.spec || "大杯",
-      })),
+      items: orderDetails.items,
+      spec: orderDetails.spec,
     };
     res.status(200).json(response);
   } catch (error) {
