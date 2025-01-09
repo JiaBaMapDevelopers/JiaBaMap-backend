@@ -49,6 +49,10 @@ const allowedOrigins = [
   'https://accounts.google.com'
 ];
 
+
+
+app.use(cors(allowedOrigins))
+
 // 統一的 CORS 設定
 const corsOptions = {
   origin: function(origin, callback) {
