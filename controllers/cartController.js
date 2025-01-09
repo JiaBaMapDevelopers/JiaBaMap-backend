@@ -4,7 +4,6 @@ const getCartByUserAndPlace = async (req, res) => {
     try {
         const { userId, placeId } = req.params; 
 
-        // 查询用户的购物车
         const cart = await Cart.findOne(
             { userId, "stores.placeId": placeId }, 
             { "stores.$": 1 } 
@@ -48,7 +47,6 @@ const addCart = async (req, res) => {
           ],
         });
       }else {
-        // 如果购物车存在，检查该店铺是否存在
         const storeIndex = cart.stores.findIndex((store) => store.placeId === placeId);
         if (storeIndex === -1) {
             cart.stores.push({

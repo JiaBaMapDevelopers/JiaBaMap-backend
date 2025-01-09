@@ -92,7 +92,7 @@ const getOrders = async (req, res) => {
   const orders = await Order.find(filter).populate("storeName").lean();
   try {
     if (!orders || orders.length === 0) {
-      return res.status(404).json({ message: "沒有找到訂單" });
+      return res.status(202).json({ message: "沒有找到訂單" });
     }
 
     const response = orders.map((order) => ({
@@ -130,11 +130,11 @@ const getOrderDetails = async (req, res) => {
     return res.status(404).send("店家未找到");
   }
 
-  // try {
+  try {
     const orderDetails = await OrderDetail.findOne({ orderId: orderId });
 
     const response = {
-      storeName: order.storeName,
+      storeName: store.storeName,
       storeAddress: store.storeAddress,
       storePhone: store.storePhone,
       orderId: order._id,
@@ -147,10 +147,10 @@ const getOrderDetails = async (req, res) => {
       spec: orderDetails.spec,
     };
     res.status(200).json(response);
-  // } catch (error) {
-  //   console.log(error);
-  //   res.status(500).json({ message: "取得詳細訂單發生錯誤，請稍後再試" });
-  // }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "取得詳細訂單發生錯誤，請稍後再試" });
+  }
 };
 
 //更新訂單
