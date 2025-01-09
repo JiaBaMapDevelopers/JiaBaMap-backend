@@ -58,7 +58,6 @@ async function parseGoogleIdToken(token) {
 }
 
 async function uploadPhotos(files) {
-  //TODO upload photos to GCS
   const storage = new Storage({
     projectId: process.env.GOOGLE_PROJECT_ID,
     credentials: {
@@ -96,4 +95,5 @@ module.exports = {
   generateToken,
   parseGoogleIdToken,
   uploadPhotos,
+  uploadMenuPhotos,
 };

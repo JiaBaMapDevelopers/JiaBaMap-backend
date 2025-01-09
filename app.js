@@ -15,7 +15,7 @@ const commentsRouter = require("./routes/comments");
 const articlelistRouter = require("./routes/articlelist");
 const userRouter = require("./routes/users");
 const authRouter = require("./routes/auth");
-const menuRouter = require("./routes/menu"); 
+const menuRouter = require("./routes/menu");
 const storeRouter = require("./routes/store");
 const orderRouter = require("./routes/order");
 const linepayRouter = require("./routes/linepay");
@@ -90,6 +90,21 @@ server
     console.error("Error starting server:", err);
   });
 
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
+    credentials: true,
+  }),
+);
+
+
+
+// app.use(cors({
+//   origin: process.env.FRONTEND_URL,
+//   credentials: true
+// }));
+app.use(cors());
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

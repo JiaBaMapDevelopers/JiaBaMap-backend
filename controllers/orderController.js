@@ -1,6 +1,8 @@
 const Order = require("../models/orderModel");
 const OrderDetail = require("../models/orderDetailModel");
+const Store = require("../models/storeModel");
 const Menu = require("../models/menuModel");
+const mongoose = require("mongoose");
 
 //計算總金額
 const calculateTotalAmount = async (items) => {
@@ -19,30 +21,61 @@ const calculateTotalAmount = async (items) => {
 //新增訂單
 const createOrder = async (req, res) => {
   const { customerId, storeId, pickupTime, items, storeName } = req.body;
-  
-  const totalAmount = await calculateTotalAmount(items);
-  
-  const order = new Order({
-    customerId,
-    storeId,
-    pickupTime,
-    totalAmount,
-    storeName,
-  });
-  
-  await order.save();
-  
-  try {
-    const orderDetails = items.map((item) => ({
-      orderId: order._id,
-      productId: item.productId,
-      quantity: item.quantity,
-      note: item.note,
-      spec: item.spec,
-    }));
 
-    const savedOrder = await OrderDetail.insertMany(orderDetails);
-    res.status(201).json({ message: "成功建立訂單", savedOrder });
+  const totalAmount = await calculateTotalAmount(items);
+  let order = await Order.findOne({ customerId, storeId, isDeleted: false });
+
+  if (order) {
+    order.pickupTime = pickupTime || order.pickupTime;
+    order.storeName = storeName || order.storeName;
+
+    items.forEach((newItem) => {
+      const existingItem = order.items.find(
+        (item) => item.productId === newItem.productId,
+      );
+      if (existingItem) {
+        // 如果商品已存在，更新数量
+        existingItem.quantity += newItem.quantity;
+      } else {
+        // 如果商品不存在，添加到 items
+        order.items.push(newItem);
+      }
+    });
+
+    order.totalAmount = order.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0,
+    );
+
+    await order.save();
+
+    await OrderDetail.deleteMany({ orderId: order._id });
+  } else {
+    order = new Order({
+      customerId,
+      storeId,
+      pickupTime,
+      totalAmount,
+      storeName,
+      items,
+    });
+
+    await order.save();
+  }
+  const orderDetails = items.map((item) => ({
+    orderId: order._id,
+    items: order.items,
+    totalAmount: order.totalAmount,
+    note: item.note,
+    spec: item.spec,
+  }));
+  const savedOrder = await OrderDetail.insertMany(orderDetails);
+  try {
+    res.status(201).json({
+      message: order.isNew ? "成功建立訂單" : "成功更新訂單",
+      order,
+      orderDetails: savedOrder,
+    });
   } catch (error) {
     res.status(500).json({ message: "建立訂單發生錯誤，請稍後再試" });
   }
@@ -51,19 +84,15 @@ const createOrder = async (req, res) => {
 //依照使用者id/店家id 取得所有未刪除訂單
 const getOrders = async (req, res) => {
   const { customerId } = req.params;
-  const filter = { 
+  const filter = {
     isDeleted: false,
     customerId: customerId,
-   };
-
- 
- 
+  };
 
   const orders = await Order.find(filter).populate("storeName").lean();
   try {
-
     if (!orders || orders.length === 0) {
-      return res.status(201).json({ message: "沒有找到訂單" });
+      return res.status(202).json({ message: "沒有找到訂單" });
     }
 
     const response = orders.map((order) => ({
@@ -71,11 +100,13 @@ const getOrders = async (req, res) => {
       restaurantName: order.storeName,
       customerId: order.customerId,
       totalAmount: order.totalAmount,
+      itemsLength: order.items.length,
       orderTime: order.orderTime,
       isPaid: order.isPaid,
     }));
     res.status(200).json(response);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "取得訂單發生錯誤，請稍後再試" });
   }
 };
@@ -84,34 +115,36 @@ const getOrders = async (req, res) => {
 const getOrderDetails = async (req, res) => {
   const { orderId } = req.params;
 
-  const order = await Order.findById(orderId)
-    .populate("storeId", "name ")
-    .lean();
-
+  // 查詢訂單
+  const order = await Order.findById(orderId);
   if (!order) {
-    return res.status(404).json({ message: "訂單不存在" });
+    return res.status(404).send("訂單未找到");
   }
+  const storeId = order.storeId; // 從訂單中提取 storeId
+
+  // 查詢店家詳細資訊
+  const store = await Store.findById(storeId).select(
+    "storeName storeAddress storePhone",
+  );
+  if (!store) {
+    return res.status(404).send("店家未找到");
+  }
+
   try {
-    const orderDetails = await OrderDetail.find({ orderId })
-      .populate("productId", "name price storeId")
-      .lean();
+    const orderDetails = await OrderDetail.findOne({ orderId: orderId });
 
     const response = {
+      storeName: store.storeName,
+      storeAddress: store.storeAddress,
+      storePhone: store.storePhone,
       orderId: order._id,
       restaurantName: order.storeId.name,
       customerId: order.customerId,
+      phone: order.storeId.phone,
+      address: order.storeId.address,
       totalAmount: order.totalAmount,
-      pickupTime: order.pickupTime,
-      orderTime: order.orderTime,
-      isPaid: order.isPaid,
-      items: orderDetails.map((detail) => ({
-        productId: detail.productId._id,
-        productName: detail.productId.name,
-        quantity: detail.quantity,
-        note: detail.note,
-        spec: detail.spec,
-        price: detail.productId.price,
-      })),
+      items: orderDetails.items,
+      spec: orderDetails.spec,
     };
     res.status(200).json(response);
   } catch (error) {

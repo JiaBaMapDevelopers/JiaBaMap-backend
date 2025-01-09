@@ -21,12 +21,33 @@ const getStore = async (req, res) => {
 };
 
 const getStoreByPlace = async (req, res) => {
-  const { placeId } = req.params;
+  const placeId = req.params.placeId;
+  console.log(placeId);
+  
   const getStore = await Store.find({ placeId: placeId });
-  res.status(200).json(getStore);
+  if(getStore.length > 0){
+    res.status(200).json();
+  }else{
+    res.status(202).json({ message: "未註冊餐廳" })
+  }
 };
+
+const getStoreIdByName = async (req, res) => {
+  const { storeName } = req.params;
+  let store = await Store.findOne({ storeName: storeName });
+  if (!store) {
+    store = await Store.findOne().sort({ createdAt: -1 });
+  }
+  if (store) {
+    res.status(200).json({ _id: store._id });
+  } else {
+    res.status(404).json({ message: "未找到任何商店" });
+  }
+};
+
 module.exports = {
   createStore,
   getStore,
   getStoreByPlace,
+  getStoreIdByName,
 };
