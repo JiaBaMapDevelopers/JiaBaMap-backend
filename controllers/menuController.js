@@ -1,8 +1,10 @@
-const Menu = require("../models/menuModel");
-const { uploadMenuPhotos } = require("../utils");
-const multer = require("multer");
-const path = require("path");
-const mongoose = require("mongoose");
+const Menu = require('../models/menuModel');
+const { uploadPhotos } = require('../utils');
+const multer = require('multer');
+const path = require('path');
+const mongoose = require('mongoose');
+const Store = require("../models/storeModel");
+
 
 // 使用記憶體儲存，不儲存在本地檔案系統
 const storage = multer.memoryStorage();
@@ -77,8 +79,12 @@ exports.createMenu = async (req, res) => {
 exports.getAllMenus = async (req, res) => {
   try {
     // 檢查 storeId 是否存在於查詢參數中
-    const { storeId } = req.query;
-
+    // const { storeId } = req.query;
+    const { placeId } = req.query
+    
+    const store = await Store.findOne({ placeId: placeId });
+    const storeId = store._id
+    
     if (!storeId) {
       return res.status(400).json({ message: "缺少 storeId 參數！" });
     }
@@ -129,16 +135,16 @@ exports.getAllMenus = async (req, res) => {
     // 4. 計算資料總數 (不受分頁影響)
     const totalCount = await Menu.countDocuments(filter);
 
-    // 5. 回傳結果
-    res.status(200).json({
-      totalCount, // 總資料數
-      totalPages: Math.ceil(totalCount / limit), // 總頁數
-      currentPage: page, // 當前頁數
-      menus, // 資料內容
-    });
-  } catch (error) {
-    res.status(500).json({ message: "查詢失敗", error });
-  }
+// 5. 回傳結果
+res.status(200).json({
+  totalCount, // 總資料數
+  totalPages: Math.ceil(totalCount / limit), // 總頁數
+  currentPage: page, // 當前頁數
+  menus // 資料內容
+});
+} catch (error) {
+res.status(202).json({ message: '查詢失敗', error });
+}
 };
 
 // 更新菜單

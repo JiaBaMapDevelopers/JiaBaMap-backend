@@ -92,7 +92,7 @@ const getOrders = async (req, res) => {
   const orders = await Order.find(filter).populate("storeName").lean();
   try {
     if (!orders || orders.length === 0) {
-      return res.status(404).json({ message: "沒有找到訂單" });
+      return res.status(202).json({ message: "沒有找到訂單" });
     }
 
     const response = orders.map((order) => ({

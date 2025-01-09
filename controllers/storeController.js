@@ -21,9 +21,15 @@ const getStore = async (req, res) => {
 };
 
 const getStoreByPlace = async (req, res) => {
-  const { placeId } = req.params;
+  const placeId = req.params.placeId;
+  console.log(placeId);
+  
   const getStore = await Store.find({ placeId: placeId });
-  res.status(200).json(getStore);
+  if(getStore.length > 0){
+    res.status(200).json();
+  }else{
+    res.status(202).json({ message: "未註冊餐廳" })
+  }
 };
 
 const getStoreIdByName = async (req, res) => {
